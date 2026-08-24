@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Consultar precio</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="config.js"></script>
+
+<style>
+
+:root{
+    --navy-900:#0f1830;
+    --indigo-600:#3d5afe;
+    --paper:#f6f3ec;
+    --ink-900:#171a23;
+    --ink-600:#5b6072;
+    --green-ok-bg:#dff5e3;
+    --green-ok-text:#1c7a3c;
+    --amber-low-bg:#fdecc8;
+    --amber-low-text:#9a5b06;
+    --red-out-bg:#fde2e2;
+    --red-out-text:#b3261e;
+}
+
+body[data-tema="azul"]{ --indigo-600:#2f7df5; }
+body[data-tema="verde"]{ --indigo-600:#1fa257; }
+body[data-tema="rojo"]{ --indigo-600:#e0413f; }
+
+*{ box-sizing:border-box; }
+
+html,body{
+    margin:0; padding:0;
+    min-height:100vh;
+    font-family:'Inter', system-ui, sans-serif;
+    background:var(--paper);
+    color:var(--ink-900);
+    -webkit-font-smoothing:antialiased;
+}
+
+body{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+}
+
+.precio-wrap{
+    width:100%;
+    max-width:380px;
+}
+
+.precio-brand{
+    text-align:center;
+    margin-bottom:18px;
+    font-size:13px;
+    font-weight:600;
+    letter-spacing:.04em;
+    color:var(--ink-600);
+    text-transform:uppercase;
+}
+
+.precio-card{
+    background:#fff;
+    border-radius:20px;
+    padding:28px 24px;
+    box-shadow:0 14px 40px rgba(15,24,48,.10);
+    text-align:center;
+}
+
+.precio-estado{
+    font-size:14px;
+    color:var(--ink-600);
+}
+
+.precio-imagen-wrap{
+    width:140px;
+    height:140px;
+    margin:0 auto 18px;
+    border-radius:16px;
+    background:var(--paper);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    overflow:hidden;
+    font-size:48px;
+    color:var(--ink-600);
+}
+
+.precio-imagen{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    display:block;
+}
+
+.precio-categoria{
+    font-size:12.5px;
+    font-weight:600;
+    letter-spacing:.03em;
+    text-transform:uppercase;
+    color:var(--indigo-600);
+    margin-bottom:8px;
+}
+
+.precio-nombre{
+    font-family:'Space Grotesk', sans-serif;
+    font-size:22px;
+    font-weight:700;
+    line-height:1.25;
+    margin-bottom:18px;
+}
+
+.precio-monto{
+    font-family:'Space Grotesk', sans-serif;
+    font-size:46px;
+    font-weight:700;
+    color:var(--indigo-600);
+    line-height:1;
+    margin-bottom:14px;
+}
+
+.precio-stock{
+    display:inline-block;
+    font-size:12.5px;
+    font-weight:700;
+    padding:5px 14px;
+    border-radius:30px;
+}
+.precio-stock.ok{ background:var(--green-ok-bg); color:var(--green-ok-text); }
+.precio-stock.low{ background:var(--amber-low-bg); color:var(--amber-low-text); }
+.precio-stock.out{ background:var(--red-out-bg); color:var(--red-out-text); }
+
+.precio-codigo{
+    margin-top:18px;
+    font-family:'JetBrains Mono', monospace;
+    font-size:11px;
+    color:var(--ink-600);
+    opacity:.7;
+}
+
+.precio-footnote{
+    text-align:center;
+    font-size:12px;
+    color:var(--ink-600);
+    margin-top:18px;
+    opacity:.8;
+}
+
+.precio-spinner{
+    width:26px; height:26px;
+    border:3px solid rgba(15,24,48,.12);
+    border-top-color:var(--indigo-600);
+    border-radius:50%;
+    margin:0 auto 14px;
+    animation:precio-spin .7s linear infinite;
+}
+@keyframes precio-spin{ to{ transform:rotate(360deg); } }
+
+@media (prefers-reduced-motion:reduce){
+    .precio-spinner{ animation:none; }
+}
+
+</style>
+</head>
+<body>
+
+<div class="precio-wrap">
+
+    <div class="precio-brand" id="precioBrand">Catálogo</div>
+
+    <div class="precio-card" id="precioCard">
+        <div class="precio-spinner"></div>
+        <div class="precio-estado">Buscando el producto...</div>
+    </div>
+
+</div>
+
+<script>
+
+const API_URL = CONFIG_NEGOCIO.API_URL;
+
+function formatearPrecio(valor){
+    return Number(valor || 0).toLocaleString("es-AR");
+}
+
+/** Same stock-state logic used elsewhere in the catalog, kept minimal here on purpose */
+function obtenerEstadoStock(stock){
+    const n = Number(String(stock ?? "").trim());
+    if(isNaN(n)) return null;
+    if(n <= 0) return { clase:"out", texto:"Sin stock" };
+    if(n <= 5) return { clase:"low", texto:"Stock bajo" };
+    return { clase:"ok", texto:"Disponible" };
+}
+
+function escapeHtml(texto){
+    const div = document.createElement("div");
+    div.textContent = texto ?? "";
+    return div.innerHTML;
+}
+
+function mostrarError(mensaje){
+    document.getElementById("precioCard").innerHTML = `
+        <div class="precio-estado">⚠️ ${escapeHtml(mensaje)}</div>
+    `;
+}
+
+async function cargarPrecio(){
+
+    const params = new URLSearchParams(window.location.search);
+    const codigo = (params.get("codigo") || "").trim();
+
+    if(!codigo){
+        mostrarError("Este link no tiene un código de producto válido.");
+        return;
+    }
+
+    try{
+
+        const res = await fetch(API_URL + "?action=producto&codigo=" + encodeURIComponent(codigo));
+        const data = await res.json();
+
+        if(!data.success || !data.producto){
+            mostrarError("No encontramos este producto. Puede que ya no esté disponible.");
+            return;
+        }
+
+        const p = data.producto;
+        const stock = obtenerEstadoStock(p.STOCK);
+        const imagenUrl = p.IMAGEN ? String(p.IMAGEN).trim() : "";
+
+        document.getElementById("precioCard").innerHTML = `
+            <div class="precio-imagen-wrap">
+                ${imagenUrl
+                    ? `<img class="precio-imagen" src="${escapeHtml(imagenUrl)}" alt="" onerror="this.parentElement.innerHTML='🛒';">`
+                    : "🛒"}
+            </div>
+            ${p.CATEGORIA ? `<div class="precio-categoria">${escapeHtml(p.CATEGORIA)}</div>` : ""}
+            <div class="precio-nombre">${escapeHtml(p.PRODUCTO)}</div>
+            <div class="precio-monto">$${formatearPrecio(p.PRECIO)}</div>
+            ${stock ? `<div class="precio-stock ${stock.clase}">${stock.texto}</div>` : ""}
+            <div class="precio-codigo">${escapeHtml(p.CODIGO)}</div>
+        `;
+
+    }catch(error){
+        console.error("Error al consultar el precio:", error);
+        mostrarError("No se pudo conectar. Revisá tu conexión e intentá de nuevo.");
+    }
+}
+
+/** Loads just the business name and color theme — no banner, no benefits, this page stays minimal on purpose */
+async function aplicarMarcaMinima(){
+
+    // Valores de respaldo mientras carga, para que la página no quede en blanco
+    document.getElementById("precioBrand").textContent = CONFIG_NEGOCIO.NOMBRE_NEGOCIO;
+    document.title = "Precio · " + CONFIG_NEGOCIO.NOMBRE_NEGOCIO;
+    if(CONFIG_NEGOCIO.TEMA){
+        document.body.setAttribute("data-tema", CONFIG_NEGOCIO.TEMA.toLowerCase());
+    }
+
+    // Carga la config real desde Sheets (nombre, tema, etc. — todo editable
+    // desde el panel admin) y actualiza los mismos elementos.
+    await cargarConfigNegocio();
+
+    document.getElementById("precioBrand").textContent = CONFIG_NEGOCIO.NOMBRE_NEGOCIO;
+    document.title = "Precio · " + CONFIG_NEGOCIO.NOMBRE_NEGOCIO;
+    if(CONFIG_NEGOCIO.TEMA){
+        document.body.setAttribute("data-tema", CONFIG_NEGOCIO.TEMA.toLowerCase());
+    }
+}
+
+aplicarMarcaMinima();
+cargarPrecio();
+
+</script>
+
+</body>
+</html>

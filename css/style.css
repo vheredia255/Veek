@@ -1,0 +1,1627 @@
+/* =========================================================
+   DESIGN TOKENS
+   Palette: curated warm duotone — deep violet-plum surface +
+   coral-orange action color + amber tag accent, on a warm
+   cream paper background. Echoes the banner's own gradient
+   (violet → coral → amber) so the whole page reads as one
+   family instead of "navy chrome + rainbow banner".
+   Signature: a "price-tag" motif — zigzag torn edge under
+   the hero, and a perforated ticket-stub line on cards.
+========================================================= */
+
+:root{
+    --navy-950:#241536;
+    --navy-900:#2c1c40;
+    --navy-800:#3a2856;
+    --indigo-600:#ff6a39;
+    --indigo-700:#e8531f;
+    --gold-500:#f0a83d;
+    --amber-500:#ffb020;
+    --coral-600:#e8397c;
+    --paper:#fdf6ec;
+    --paper-line:#f0e2cf;
+    --ink-900:#2a1f1a;
+    --ink-600:#7d6c60;
+
+    --bg-card:#ffffff;
+
+    --green-ok-bg:#dff5e3;
+    --green-ok-text:#1c7a3c;
+    --amber-low-bg:#fdecc8;
+    --amber-low-text:#9a5b06;
+
+    /* Gradiente del hero/navbar — configurable desde el panel admin
+       (Apariencia → "Gradiente propio"). Si no hay valores guardados
+       se usa la pareja violeta→coral de arriba. */
+    --grad-a:var(--navy-950);
+    --grad-b:var(--navy-800);
+
+    --radius-lg:18px;
+    --radius-md:12px;
+    --radius-sm:9px;
+    --radius-pill:50px;
+
+    --shadow-card:0 8px 22px rgba(42,25,54,.08), 0 2px 6px rgba(42,25,54,.05);
+    --shadow-card-hover:0 16px 34px rgba(42,25,54,.16), 0 4px 10px rgba(42,25,54,.08);
+    --shadow-float:0 10px 28px rgba(42,25,54,.3);
+
+    --font-display:'Space Grotesk', system-ui, sans-serif;
+    --font-body:'Inter', system-ui, -apple-system, sans-serif;
+    --font-price:'JetBrains Mono', ui-monospace, monospace;
+
+    --navbar-h:128px;
+    --top-banner-h:0px;
+    --minimo-bar-h:0px;
+    --mobile-cart-bar-h:60px;
+}
+
+*{
+    box-sizing:border-box;
+}
+
+body{
+    background:var(--paper);
+    padding-top:calc(var(--navbar-h) + var(--top-banner-h) + var(--minimo-bar-h));
+    font-family:var(--font-body);
+    color:var(--ink-900);
+}
+
+h1,h2,h3,h4,h5,.navbar-brand{
+    font-family:var(--font-display);
+}
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible{
+    outline:3px solid #9fb0ff;
+    outline-offset:2px;
+}
+
+/* =========================================================
+   NAVBAR
+========================================================= */
+
+.navbar{
+    background:linear-gradient(135deg, var(--grad-a), var(--grad-b));
+    background-image:
+        repeating-linear-gradient(135deg, rgba(255,255,255,.035) 0px, rgba(255,255,255,.035) 1px, transparent 1px, transparent 13px),
+        linear-gradient(135deg, var(--grad-a), var(--grad-b));
+    box-shadow:0 4px 20px rgba(42,25,54,.28);
+    padding:12px 0 16px;
+}
+
+.navbar.fixed-top{
+    /* Bootstrap fija top:0 por defecto — esto lo corre hacia abajo
+       exactamente la altura de la franja superior (0 si está oculta,
+       así que sin franja el navbar queda exactamente como siempre). */
+    top:var(--top-banner-h);
+}
+
+.navbar-top{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    width:100%;
+}
+
+.navbar-brand{
+    font-weight:700;
+    font-size:1.2rem;
+    color:#fff;
+    letter-spacing:-.01em;
+}
+
+.btn-cart-top{
+    background:rgba(255,255,255,.1);
+    color:#fff;
+    border:1px solid rgba(255,255,255,.22);
+    border-radius:var(--radius-pill);
+    font-weight:700;
+    padding:7px 16px;
+    font-size:.92rem;
+}
+
+.btn-cart-top:hover{
+    background:var(--indigo-600);
+    border-color:var(--indigo-600);
+    color:#fff;
+}
+
+.cart-count-badge{
+    display:inline-block;
+    background:var(--coral-600);
+    color:#fff;
+    border-radius:var(--radius-pill);
+    padding:1px 8px;
+    font-size:.82rem;
+    margin-left:2px;
+}
+
+.navbar-search-row{
+    width:100%;
+    margin-top:10px;
+    display:flex;
+    align-items:center;
+    gap:8px;
+}
+
+.search-wrap{
+    position:relative;
+    display:flex;
+    align-items:center;
+    flex:1;
+    min-width:0;
+}
+
+.search-icon{
+    position:absolute;
+    left:16px;
+    pointer-events:none;
+    opacity:.55;
+}
+
+#search{
+    border-radius:var(--radius-pill);
+    padding:11px 38px 11px 40px;
+    border:1px solid transparent;
+    background:rgba(255,255,255,.94);
+    width:100%;
+    font-family:var(--font-body);
+}
+
+#search:focus{
+    background:#fff;
+    box-shadow:0 0 0 3px rgba(61,90,254,.35);
+}
+
+.search-clear{
+    position:absolute;
+    right:10px;
+    border:none;
+    background:transparent;
+    color:var(--ink-600);
+    font-size:.85rem;
+    padding:6px;
+    border-radius:50%;
+    display:none;
+    cursor:pointer;
+}
+
+.search-clear.visible{
+    display:block;
+}
+
+.btn-pdf-top{
+    flex-shrink:0;
+    background:rgba(255,255,255,.94);
+    color:var(--ink-900);
+    border:1px solid transparent;
+    border-radius:var(--radius-pill);
+    font-weight:700;
+    padding:11px 16px;
+    font-size:.88rem;
+    white-space:nowrap;
+}
+
+.btn-pdf-top:hover{
+    background:#fff;
+    box-shadow:0 0 0 3px rgba(61,90,254,.25);
+}
+
+.btn-pdf-top:disabled{
+    opacity:.6;
+    cursor:not-allowed;
+}
+
+/* Con 3 elementos compitiendo por espacio en el navbar (buscador +
+   2 botones), en un celular chico (<400px) el buscador quedaría muy
+   angosto para escribir cómodo. Se esconde el texto de los botones y
+   se deja solo el ícono — siguen siendo reconocibles (📦 / 📄) y el
+   buscador recupera el espacio que necesita. */
+.btn-texto-navbar-corto{
+    display:none;
+}
+
+@media (max-width:400px){
+    .btn-texto-navbar{
+        display:none;
+    }
+    .btn-texto-navbar-corto{
+        display:inline;
+    }
+    .btn-pdf-top{
+        padding:11px 12px;
+    }
+}
+
+/* =========================================================
+   INDICADOR DE PEDIDO MÍNIMO
+========================================================= */
+
+.minimo-progress{
+    position:fixed;
+    top:calc(var(--navbar-h) + var(--top-banner-h));
+    left:0;
+    right:0;
+    z-index:1025; /* debajo del navbar (1030) pero por encima del contenido */
+    background:#fff8e6;
+    border-bottom:1px solid #f2e2ad;
+}
+
+.minimo-progress-inner{
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+    padding:10px 24px;
+}
+
+.minimo-progress-texto{
+    font-size:.82rem;
+    font-weight:600;
+    color:#7a5b06;
+}
+
+.minimo-progress-track{
+    width:100%;
+    height:6px;
+    border-radius:var(--radius-pill);
+    background:#f0e3bb;
+    overflow:hidden;
+}
+
+.minimo-progress-fill{
+    height:100%;
+    border-radius:var(--radius-pill);
+    background:var(--indigo-600);
+    transition:width .35s ease;
+}
+
+.minimo-progress-completo{
+    background:#e7f7ec;
+    border-bottom:1px solid #b9e6c6;
+}
+
+.minimo-progress-completo .minimo-progress-texto{
+    color:var(--green-ok-text, #1c7a3c);
+}
+
+.minimo-progress-completo .minimo-progress-track{
+    background:#cdeed9;
+}
+
+.minimo-progress-completo .minimo-progress-fill{
+    background:#1c7a3c;
+}
+
+@media (min-width:769px){
+    .minimo-progress-inner{
+        flex-direction:row;
+        align-items:center;
+        gap:16px;
+    }
+    .minimo-progress-track{
+        max-width:260px;
+    }
+}
+
+/* =========================================================
+   HERO
+   Signature: zigzag "torn price-tag" edge at the bottom.
+========================================================= */
+
+.hero{
+    position:relative;
+    background:radial-gradient(120% 140% at 15% 0%, var(--grad-b) 0%, var(--grad-a) 55%, var(--grad-a) 100%);
+    color:#fff;
+    text-align:center;
+    padding:22px 20px 42px;
+    overflow:hidden;
+}
+
+.hero::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    background-image:repeating-linear-gradient(135deg, rgba(255,255,255,.04) 0px, rgba(255,255,255,.04) 1px, transparent 1px, transparent 13px);
+    pointer-events:none;
+}
+
+.hero::after{
+    content:"";
+    position:absolute;
+    left:0;
+    right:0;
+    bottom:-1px;
+    height:4px;
+    background-color:var(--paper);
+}
+
+.hero h1{
+    font-weight:700;
+    letter-spacing:-.02em;
+}
+
+.hero p{
+    margin-bottom:0;
+    opacity:.82;
+    font-weight:500;
+}
+
+/* =========================================================
+   BENEFICIOS
+========================================================= */
+
+.beneficios{
+    background:transparent;
+    padding:18px 0 6px;
+    margin-bottom:6px;
+}
+
+.beneficio-item{
+    font-weight:600;
+    color:var(--ink-600);
+    font-size:.82rem;
+}
+
+.beneficio-item .bi{
+    font-size:.95rem;
+    vertical-align:-1px;
+}
+
+.beneficio-link{
+    text-decoration:none;
+    cursor:pointer;
+}
+
+.beneficio-link:hover{
+    color:var(--indigo-600);
+}
+
+/* Minimapa de Google Maps con la dirección del local, dentro del
+   modal de ubicación (carga dinámica desde el panel admin,
+   ver aplicarBeneficios() en app.js) */
+.mapa-direccion-wrap{
+    margin:0 0 16px;
+    border-radius:14px;
+    overflow:hidden;
+    border:1px solid rgba(0,0,0,.08);
+    box-shadow:0 4px 16px rgba(0,0,0,.08);
+    animation:fadeInMapa .35s ease;
+}
+
+.mapa-direccion-iframe{
+    display:block;
+    width:100%;
+    height:220px;
+    border:0;
+}
+
+@keyframes fadeInMapa{
+    from{ opacity:0; transform:translateY(-6px); }
+    to{ opacity:1; transform:translateY(0); }
+}
+
+.modalUbicacion-dato{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-weight:600;
+    color:var(--ink-600);
+    font-size:.92rem;
+    margin-bottom:10px;
+}
+
+.modalUbicacion-link{
+    text-decoration:none;
+    cursor:pointer;
+}
+
+.modalUbicacion-link:hover{
+    color:var(--indigo-600);
+}
+
+/* =========================================================
+   CATEGORÍAS (CHIPS — tag motif with a punched hole)
+========================================================= */
+
+.categorias-section{
+    margin-bottom:6px;
+}
+
+.chip-scroll{
+    display:flex;
+    gap:10px;
+    overflow-x:auto;
+    padding:4px 2px 14px;
+    scrollbar-width:thin;
+    -webkit-overflow-scrolling:touch;
+}
+
+.chip-scroll::-webkit-scrollbar{
+    height:5px;
+}
+
+.chip-scroll::-webkit-scrollbar-thumb{
+    background:#dcd7c8;
+    border-radius:10px;
+}
+
+.chip{
+    position:relative;
+    flex:0 0 auto;
+    border:1px solid #e4e0d3;
+    background:#fff;
+    color:var(--ink-900);
+    border-radius:var(--radius-pill);
+    padding:9px 18px 9px 24px;
+    font-size:.84rem;
+    font-weight:600;
+    white-space:nowrap;
+    cursor:pointer;
+    transition:.2s;
+}
+
+.chip::before{
+    content:"";
+    position:absolute;
+    left:10px;
+    top:50%;
+    transform:translateY(-50%);
+    width:6px;
+    height:6px;
+    border-radius:50%;
+    background:var(--paper);
+    border:1px solid #e4e0d3;
+}
+
+.chip:hover{
+    border-color:var(--indigo-600);
+}
+
+.chip.active{
+    background:var(--indigo-600);
+    border-color:var(--indigo-600);
+    color:#fff;
+}
+
+.chip.active::before{
+    background:var(--indigo-600);
+    border-color:rgba(255,255,255,.6);
+}
+
+/* =========================================================
+   ORDENAR RESULTADOS
+========================================================= */
+
+.orden-filtro-wrap{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:2px 2px 14px;
+    margin-top:6px;
+}
+
+.orden-filtro-label{
+    font-size:.84rem;
+    font-weight:600;
+    color:var(--ink-900);
+    white-space:nowrap;
+}
+
+.orden-select{
+    border:1px solid #e4e0d3;
+    background:#fff;
+    border-radius:var(--radius-pill);
+    padding:7px 14px;
+    font-size:.84rem;
+    font-weight:600;
+    color:var(--ink-900);
+    font-family:var(--font-body);
+    transition:.2s;
+    cursor:pointer;
+}
+
+.orden-select:focus{
+    outline:none;
+    border-color:var(--indigo-600);
+    box-shadow:0 0 0 3px rgba(61,90,254,.18);
+}
+
+/* =========================================================
+   FILTRO DE PRECIO
+========================================================= */
+
+.precio-filtro-wrap{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    flex-wrap:wrap;
+    padding:2px 2px 14px;
+    margin-top:6px;
+}
+
+.precio-filtro-label{
+    font-size:.84rem;
+    font-weight:600;
+    color:var(--ink-900);
+    white-space:nowrap;
+}
+
+.precio-filtro-inputs{
+    display:flex;
+    align-items:center;
+    gap:8px;
+}
+
+.precio-input{
+    width:92px;
+    border:1px solid #e4e0d3;
+    background:#fff;
+    border-radius:var(--radius-pill);
+    padding:7px 12px;
+    font-size:.84rem;
+    font-weight:600;
+    color:var(--ink-900);
+    font-family:var(--font-body);
+    transition:.2s;
+}
+
+.precio-input::-webkit-outer-spin-button,
+.precio-input::-webkit-inner-spin-button{
+    -webkit-appearance:none;
+    margin:0;
+}
+
+.precio-input[type="number"]{
+    -moz-appearance:textfield;
+}
+
+.precio-input:focus{
+    border-color:var(--indigo-600);
+    box-shadow:0 0 0 3px rgba(61,90,254,.18);
+}
+
+.precio-filtro-sep{
+    color:var(--ink-600);
+    font-weight:600;
+    font-size:.8rem;
+}
+
+.precio-filtro-clear{
+    border:none;
+    background:transparent;
+    color:var(--ink-600);
+    font-size:.8rem;
+    padding:6px;
+    border-radius:50%;
+    cursor:pointer;
+    display:none;
+}
+
+.precio-filtro-clear.visible{
+    display:block;
+}
+
+.precio-filtro-clear:hover{
+    color:var(--indigo-600);
+}
+
+@media (max-width:400px){
+    .precio-input{
+        width:80px;
+    }
+}
+
+/* =========================================================
+   RESULTADOS / EMPTY STATE
+========================================================= */
+
+.resultados-info{
+    font-size:.85rem;
+    color:var(--ink-600);
+    margin:4px 2px 14px;
+    font-weight:600;
+}
+
+.sin-resultados{
+    text-align:center;
+    padding:60px 20px;
+    color:var(--ink-600);
+}
+
+.sin-resultados-icon{
+    font-size:2.5rem;
+    margin-bottom:10px;
+}
+
+.sin-resultados h5{
+    color:var(--ink-900);
+    font-weight:700;
+}
+
+/* =========================================================
+   SKELETON LOADER
+========================================================= */
+
+.skeleton-card{
+    background:#fff;
+    border-radius:var(--radius-lg);
+    box-shadow:var(--shadow-card);
+    overflow:hidden;
+    height:100%;
+}
+
+.skeleton-img{
+    width:100%;
+    aspect-ratio:1/1;
+    background:linear-gradient(90deg,#eee9da 25%,#e3ddc9 37%,#eee9da 63%);
+    background-size:400% 100%;
+    animation:skeleton-shimmer 1.4s ease infinite;
+}
+
+.skeleton-line{
+    height:12px;
+    margin:14px 15px 0;
+    border-radius:6px;
+    background:linear-gradient(90deg,#eee9da 25%,#e3ddc9 37%,#eee9da 63%);
+    background-size:400% 100%;
+    animation:skeleton-shimmer 1.4s ease infinite;
+}
+
+.skeleton-line.w-60{ width:60%; }
+.skeleton-line.w-80{ width:80%; margin-bottom:15px; }
+
+@keyframes skeleton-shimmer{
+    0%{ background-position:100% 50%; }
+    100%{ background-position:0 50%; }
+}
+
+@media (prefers-reduced-motion:reduce){
+    .skeleton-img,.skeleton-line{
+        animation:none;
+    }
+}
+
+/* =========================================================
+   PRODUCTOS
+========================================================= */
+
+.card-product{
+    position:relative;
+    background:var(--bg-card);
+    border:1px solid var(--paper-line);
+    border-radius:var(--radius-lg);
+    overflow:hidden;
+    transition:.25s ease;
+    box-shadow:var(--shadow-card);
+    cursor:pointer;
+}
+
+.card-product:hover{
+    transform:translateY(-4px);
+    border-color:transparent;
+    box-shadow:var(--shadow-card-hover);
+}
+
+.card-product .card-img-wrap{
+    position:relative;
+    background:#fff;
+}
+
+.card-product img{
+    width:100%;
+    aspect-ratio:1/1;
+    object-fit:contain;
+    object-position:center;
+    background:#fff;
+    padding:18px;
+    transition:transform .3s ease;
+}
+
+.card-product:hover img{
+    transform:scale(1.05);
+}
+
+/* Ticket-stub perforation between the image and product info */
+.ticket-perf{
+    position:relative;
+    height:1px;
+    margin:0 16px;
+    border-top:2px dashed #e7e2d2;
+}
+
+.ticket-perf::before,
+.ticket-perf::after{
+    content:"";
+    position:absolute;
+    top:-6px;
+    width:12px;
+    height:12px;
+    border-radius:50%;
+    background:var(--paper);
+}
+
+.ticket-perf::before{ left:-6px; }
+.ticket-perf::after{ right:-6px; }
+
+.card-product .card-body-custom{
+    padding:14px 16px 18px;
+}
+
+.card-product small{
+    display:block;
+    color:var(--ink-600);
+    margin-bottom:6px;
+    text-transform:uppercase;
+    font-size:11px;
+    letter-spacing:.6px;
+    font-weight:700;
+}
+
+.card-product h5{
+    font-size:15px;
+    line-height:1.4;
+    min-height:42px;
+    font-weight:600;
+    color:var(--ink-900);
+    margin:0;
+    font-family:var(--font-body);
+}
+
+.price{
+    font-family:var(--font-price);
+    font-size:1.4rem;
+    font-weight:700;
+    color:var(--navy-950);
+    margin-top:10px;
+    letter-spacing:-.02em;
+}
+
+.stock-badge{
+    display:inline-block;
+    font-size:.72rem;
+    font-weight:700;
+    padding:3px 11px;
+    border-radius:var(--radius-pill);
+    margin-top:8px;
+}
+
+.stock-badge.stock-ok{
+    background:var(--green-ok-bg);
+    color:var(--green-ok-text);
+}
+
+.stock-badge.stock-bajo{
+    background:var(--amber-low-bg);
+    color:var(--amber-low-text);
+}
+
+.stock-badge.stock-agotado{
+    background:#fee2e2;
+    color:#b91c1c;
+}
+
+.caja-oferta{
+    margin-top:8px;
+    padding:8px 10px;
+    background:var(--paper, #f6f3ec);
+    border:1px dashed var(--grad-a, #241536);
+    border-radius:10px;
+    font-size:12px;
+    line-height:1.5;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:8px;
+    flex-wrap:wrap;
+}
+.caja-oferta b{ font-size:13.5px; }
+.btn-caja{
+    flex-shrink:0;
+    border:none;
+    background:var(--grad-a, #241536);
+    color:#fff;
+    font-size:11.5px;
+    font-weight:600;
+    padding:6px 12px;
+    border-radius:20px;
+    cursor:pointer;
+}
+.btn-caja:hover{ opacity:.9; }
+
+.qty-stepper{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    margin-top:12px;
+}
+
+.qty-btn{
+    width:34px;
+    height:34px;
+    border-radius:var(--radius-sm);
+    border:1px solid #e4e0d3;
+    background:#fff;
+    font-size:1.1rem;
+    font-weight:700;
+    color:var(--indigo-600);
+    line-height:1;
+}
+
+.qty-btn:active{
+    background:#eef0ff;
+}
+
+.qty-input{
+    width:100%;
+    max-width:64px;
+    text-align:center;
+    border:1px solid #e4e0d3;
+    border-radius:var(--radius-sm);
+    height:34px;
+    font-weight:600;
+    font-family:var(--font-price);
+}
+
+.card-product .btn-primary{
+    background:var(--indigo-600);
+    border:none;
+    font-weight:600;
+    border-radius:var(--radius-md);
+    margin-top:14px;
+    width:100%;
+    padding:10px;
+}
+
+.card-product .btn-primary:hover{
+    background:var(--indigo-700);
+}
+
+/* =========================================================
+   RIBBONS
+========================================================= */
+
+.ribbon-destacado{
+    position:absolute;
+    top:12px;
+    left:12px;
+    background:var(--gold-500);
+    color:#231505;
+    font-weight:700;
+    font-family:var(--font-display);
+    font-size:11px;
+    padding:6px 11px;
+    border-radius:20px;
+    z-index:5;
+    box-shadow:0 3px 8px rgba(217,154,61,.35);
+}
+
+.ribbon-oferta{
+    position:absolute;
+    top:12px;
+    right:12px;
+    background:var(--coral-600);
+    color:#fff;
+    font-weight:700;
+    font-family:var(--font-display);
+    font-size:11px;
+    padding:6px 11px;
+    border-radius:20px;
+    z-index:5;
+}
+
+.ribbon-nuevo{
+    position:absolute;
+    top:12px;
+    left:12px;
+    background:var(--emerald-500, #10b981);
+    color:#fff;
+    font-weight:700;
+    font-family:var(--font-display);
+    font-size:11px;
+    padding:6px 11px;
+    border-radius:20px;
+    z-index:5;
+    box-shadow:0 3px 8px rgba(16,185,129,.35);
+}
+
+/* =========================================================
+   VISTA RÁPIDA
+========================================================= */
+
+.qv-layout{
+    display:flex;
+    flex-wrap:wrap;
+    gap:28px;
+}
+
+.qv-col-imagen{
+    flex:1 1 280px;
+    min-width:0;
+}
+
+.qv-col-info{
+    flex:1 1 280px;
+    min-width:0;
+    display:flex;
+    flex-direction:column;
+}
+
+.qv-img{
+    width:100%;
+    max-height:360px;
+    object-fit:contain;
+    background:#fff;
+    border-radius:14px;
+}
+
+/* ---- Zoom estilo Amazon: el mouse mueve el punto de ampliación ---- */
+
+.qv-imagen-zoom-wrap{
+    position:relative;
+    overflow:hidden;
+    border-radius:14px;
+    background:#fff;
+}
+
+.qv-imagen-zoom-wrap.zoom-activo{
+    cursor:zoom-in;
+}
+
+.qv-imagen-zoom-wrap.zoom-activo .qv-img{
+    transform:scale(2.2);
+}
+
+.qv-imagen-zoom-wrap .qv-img{
+    transition:transform .06s linear;
+    will-change:transform;
+}
+
+.qv-titulo{
+    font-weight:700;
+    color:var(--ink-900);
+    margin:2px 0 10px;
+    line-height:1.3;
+}
+
+.qv-precio-grande{
+    font-size:2rem;
+    font-weight:700;
+}
+
+.qv-descripcion{
+    color:var(--ink-600);
+    font-size:.92rem;
+    line-height:1.5;
+    margin:10px 0 0;
+}
+
+@media (max-width:576px){
+    .qv-precio-grande{ font-size:1.6rem; }
+}
+
+/* ---- Productos relacionados dentro del Quick View ---- */
+
+.qv-relacionados-wrap{
+    margin-top:26px;
+    padding-top:20px;
+    border-top:1px solid var(--paper-line);
+}
+
+.qv-relacionados-titulo{
+    font-size:.9rem;
+    font-weight:700;
+    color:var(--ink-900);
+    margin:0 0 12px;
+}
+
+.qv-relacionados-scroll{
+    display:flex;
+    gap:12px;
+    overflow-x:auto;
+    padding-bottom:6px;
+    scrollbar-width:thin;
+    -webkit-overflow-scrolling:touch;
+}
+
+.qv-relacionados-scroll::-webkit-scrollbar{
+    height:5px;
+}
+
+.qv-relacionados-scroll::-webkit-scrollbar-thumb{
+    background:#dcd7c8;
+    border-radius:10px;
+}
+
+.qv-relacionado-card{
+    flex:0 0 auto;
+    width:118px;
+    display:flex;
+    flex-direction:column;
+    align-items:flex-start;
+    gap:4px;
+    background:#fff;
+    border:1px solid var(--paper-line);
+    border-radius:14px;
+    padding:8px;
+    cursor:pointer;
+    text-align:left;
+    transition:.2s;
+}
+
+.qv-relacionado-card:hover{
+    border-color:var(--indigo-600);
+    transform:translateY(-2px);
+}
+
+.qv-relacionado-card img{
+    width:100%;
+    height:80px;
+    object-fit:contain;
+    background:var(--paper);
+    border-radius:8px;
+}
+
+.qv-relacionado-nombre{
+    font-size:.74rem;
+    font-weight:600;
+    color:var(--ink-900);
+    line-height:1.25;
+    display:-webkit-box;
+    -webkit-line-clamp:2;
+    -webkit-box-orient:vertical;
+    overflow:hidden;
+}
+
+.qv-relacionado-precio{
+    font-size:.8rem;
+    font-weight:700;
+    color:var(--indigo-600);
+    font-family:var(--font-price, inherit);
+}
+
+/* =========================================================
+   MODAL CARRITO
+========================================================= */
+
+.modal-content{
+    border:none;
+    border-radius:22px;
+    overflow:hidden;
+}
+
+.modal-header{
+    background:linear-gradient(135deg, var(--grad-a), var(--grad-b));
+    background-image:repeating-linear-gradient(135deg, rgba(255,255,255,.035) 0px, rgba(255,255,255,.035) 1px, transparent 1px, transparent 13px), linear-gradient(135deg, var(--grad-a), var(--grad-b));
+    color:#fff;
+}
+
+.modal-header .btn-close{
+    filter:brightness(0) invert(1);
+}
+
+.modal-title{
+    font-weight:700;
+    font-family:var(--font-display);
+}
+
+.form-section-label{
+    font-weight:700;
+    font-size:.85rem;
+    color:var(--ink-600);
+    text-transform:uppercase;
+    letter-spacing:.4px;
+    margin-bottom:8px;
+}
+
+.cart-total-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+}
+
+.cart-total-row h5{
+    font-family:var(--font-price);
+}
+
+.cart-empty{
+    text-align:center;
+    padding:30px 10px;
+    color:var(--ink-600);
+}
+
+.cart-empty-icon{
+    font-size:2.2rem;
+    margin-bottom:6px;
+}
+
+.cart-item-row{
+    border-bottom:1px solid #eee9da;
+    padding:14px 0;
+}
+
+.cart-item-main{
+    display:flex;
+    gap:12px;
+    align-items:flex-start;
+}
+
+.cart-item-thumb{
+    width:56px;
+    height:56px;
+    object-fit:cover;
+    border-radius:8px;
+    border:1px solid #eee9da;
+    background:#fafafa;
+    flex-shrink:0;
+}
+
+.cart-item-info{
+    flex:1 1 0;
+    min-width:0;
+}
+
+.cart-item-name{
+    font-weight:700;
+    font-size:.95rem;
+}
+
+.cart-item-subtotal{
+    margin-top:8px;
+    font-weight:700;
+    font-family:var(--font-price);
+    color:var(--indigo-600);
+}
+
+/* =========================================================
+   BOTONES GENERALES
+========================================================= */
+
+.btn{
+    border-radius:var(--radius-md);
+}
+
+.btn-success,
+.btn-primary{
+    font-weight:600;
+}
+
+#btn-checkout{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+}
+
+.btn-checkout-spinner{
+    width:15px;
+    height:15px;
+    border:2px solid rgba(255,255,255,.4);
+    border-top-color:#fff;
+    border-radius:50%;
+    display:none;
+    flex-shrink:0;
+    animation:btn-checkout-spin .6s linear infinite;
+}
+
+#btn-checkout.loading .btn-checkout-spinner{
+    display:inline-block;
+}
+
+@keyframes btn-checkout-spin{
+    to{ transform:rotate(360deg); }
+}
+
+@media (prefers-reduced-motion:reduce){
+    .btn-checkout-spinner{ animation:none; }
+}
+
+.btn-primary{
+    background:var(--indigo-600);
+    border-color:var(--indigo-600);
+}
+
+.btn-primary:hover{
+    background:var(--indigo-700);
+    border-color:var(--indigo-700);
+}
+
+.btn-outline-primary{
+    color:var(--indigo-600);
+    border-color:var(--indigo-600);
+}
+
+.btn-outline-primary:hover{
+    background:var(--indigo-600);
+    border-color:var(--indigo-600);
+}
+
+/* =========================================================
+   FRANJA SUPERIOR — mensajes rotativos
+========================================================= */
+
+.top-banner{
+    position:fixed;
+    top:0;
+    left:0;
+    right:0;
+    z-index:1031; /* por encima del navbar (Bootstrap fixed-top usa 1030) */
+    background:var(--green-ok-text);
+    color:#fff;
+    overflow:hidden;
+}
+
+.top-banner-track{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    height:34px;
+    padding:0 16px;
+    font-size:.82rem;
+    font-weight:600;
+    text-align:center;
+}
+
+.top-banner-track .msg{
+    display:none;
+    animation:top-banner-fade .5s ease;
+}
+
+.top-banner-track .msg.activo{
+    display:block;
+}
+
+@keyframes top-banner-fade{
+    from{ opacity:0; transform:translateY(-4px); }
+    to{ opacity:1; transform:translateY(0); }
+}
+
+@media (prefers-reduced-motion:reduce){
+    .top-banner-track .msg{ animation:none; }
+}
+
+/* =========================================================
+   TOASTS
+========================================================= */
+
+.toast-container{
+    position:fixed;
+    top:calc(var(--navbar-h) + var(--top-banner-h) + 10px);
+    right:16px;
+    left:16px;
+    display:flex;
+    flex-direction:column;
+    align-items:flex-end;
+    gap:8px;
+    z-index:12000;
+    pointer-events:none;
+}
+
+.app-toast{
+    background:var(--navy-950);
+    color:#fff;
+    padding:12px 18px;
+    border-radius:var(--radius-md);
+    font-size:.9rem;
+    font-weight:600;
+    box-shadow:0 10px 25px rgba(0,0,0,.25);
+    opacity:0;
+    transform:translateY(-10px);
+    transition:.25s ease;
+    max-width:340px;
+}
+
+.app-toast.show{
+    opacity:1;
+    transform:translateY(0);
+}
+
+.app-toast.success{
+    background:#15803d;
+}
+
+.app-toast.error{
+    background:#b91c1c;
+}
+
+/* =========================================================
+   WHATSAPP FLOTANTE
+========================================================= */
+
+.whatsapp-float-text{
+    position:fixed;
+    bottom:25px;
+    left:25px;
+    background:#25D366;
+    color:#fff;
+    text-decoration:none;
+    padding:12px 18px;
+    border-radius:var(--radius-pill);
+    display:flex;
+    align-items:center;
+    gap:10px;
+    font-weight:600;
+    box-shadow:var(--shadow-float);
+    z-index:9999;
+    transition:.25s;
+}
+
+.whatsapp-float-text:hover{
+    transform:scale(1.05);
+    color:#fff;
+    text-decoration:none;
+}
+
+/* =========================================================
+   VOLVER ARRIBA
+========================================================= */
+
+.scroll-top-btn{
+    position:fixed;
+    right:20px;
+    bottom:95px;
+    width:44px;
+    height:44px;
+    border-radius:50%;
+    border:none;
+    background:var(--grad-a);
+    color:#fff;
+    font-size:1.2rem;
+    font-weight:700;
+    box-shadow:var(--shadow-float);
+    z-index:9998;
+    transition:.2s;
+}
+
+.scroll-top-btn:hover{
+    background:var(--indigo-600);
+}
+
+/* =========================================================
+   BARRA CARRITO MOBILE
+========================================================= */
+
+.mobile-cart-bar{
+    position:fixed;
+    left:0;
+    right:0;
+    bottom:0;
+    height:var(--mobile-cart-bar-h);
+    background:var(--indigo-600);
+    color:#fff;
+    border:none;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:0 18px;
+    font-weight:700;
+    font-size:.9rem;
+    z-index:9990;
+    padding-bottom:env(safe-area-inset-bottom);
+    box-shadow:0 -6px 20px rgba(0,0,0,.2);
+}
+
+.mcb-right{
+    font-family:var(--font-price);
+}
+
+/* =========================================================
+   RESPONSIVE — TABLET / DESKTOP (≥769px)
+========================================================= */
+
+@media (min-width:769px){
+
+    :root{
+        --navbar-h:80px;
+    }
+
+    .navbar-top{
+        width:auto;
+        flex:0 0 auto;
+        gap:20px;
+    }
+
+    .navbar-search-row{
+        flex:1;
+        margin:0 24px;
+        max-width:760px;
+    }
+
+    .navbar .container{
+        display:flex;
+        align-items:center;
+        flex-wrap:nowrap;
+    }
+
+    #search{
+        height:50px;
+        font-size:1.05rem;
+        padding:13px 44px;
+    }
+
+    .search-icon{
+        font-size:1.1rem;
+    }
+
+    .btn-cart-top{
+        font-size:1rem;
+        padding:8px 18px;
+    }
+
+    .mobile-cart-bar{
+        display:none !important;
+    }
+}
+
+/* =========================================================
+   RESPONSIVE — CELULARES (≤768px)
+========================================================= */
+
+@media (max-width:768px){
+
+    :root{
+        --navbar-h:128px;
+    }
+
+    body{
+        padding-bottom:calc(var(--mobile-cart-bar-h) + 10px);
+    }
+
+    .navbar-brand{
+        font-size:1.05rem;
+    }
+
+    .hero{
+        padding:38px 16px 50px;
+    }
+
+    .hero h1{
+        font-size:1.7rem;
+    }
+
+    .hero p{
+        font-size:.95rem;
+    }
+
+    .beneficio-item{
+        font-size:.78rem;
+    }
+
+    .whatsapp-float-text span{
+        display:none;
+    }
+
+    .whatsapp-float-text{
+        bottom:calc(var(--mobile-cart-bar-h) + 18px);
+        padding:13px;
+    }
+
+    .scroll-top-btn{
+        bottom:calc(var(--mobile-cart-bar-h) + 18px);
+    }
+
+    .modal{
+        z-index:11000 !important;
+    }
+
+    .modal-backdrop{
+        z-index:10990 !important;
+    }
+}
+
+/* =========================================================
+   TEMAS DE COLOR (seleccionables desde el panel admin / Sheets)
+   Se activan poniendo data-tema="azul|verde|rojo" en <body>.
+   Sin el atributo (o con data-tema="navy") se usa la paleta
+   original. Solo se reemplazan navy/indigo: el resto de la
+   paleta (paper, ink, ámbar/coral de etiquetas, estados de
+   stock) se mantiene igual en todos los temas.
+========================================================= */
+
+body[data-tema="azul"]{
+    --navy-950:#0b1f3a;
+    --navy-800:#16335c;
+    --indigo-600:#2f7df5;
+    --indigo-700:#1f63d1;
+}
+
+body[data-tema="verde"]{
+    --navy-950:#0c2417;
+    --navy-800:#16402a;
+    --indigo-600:#1fa257;
+    --indigo-700:#168447;
+}
+
+body[data-tema="rojo"]{
+    --navy-950:#2a0f12;
+    --navy-800:#481a1f;
+    --indigo-600:#e0413f;
+    --indigo-700:#bf2e2e;
+}
+
+/* =========================================================
+   BANNER PERSONALIZADO (imagen de fondo opcional en el Hero)
+   Se activa agregando la clase .hero--imagen vía JS cuando
+   hay una URL de imagen configurada en Sheets.
+========================================================= */
+
+.hero.hero--imagen{
+    background-image:
+        linear-gradient(180deg, rgba(36,21,54,.55), rgba(36,21,54,.72)),
+        var(--hero-bg-img);
+    background-size:cover;
+    background-position:center;
+    background-repeat:no-repeat;
+
+    /* Marco tipo tarjeta: la imagen del banner flota sobre el fondo
+       cálido de la página en vez de pegarse borde a borde, con un
+       aro sutil en degradé que la conecta con la paleta del sitio. */
+    max-width:1400px;
+    margin:18px auto 0;
+    border-radius:22px;
+    box-shadow:0 18px 44px rgba(42,25,54,.35), 0 0 0 3px rgba(255,255,255,.14) inset;
+
+    /* Alto fijo, no calculado según el ancho de pantalla — así el
+       banner siempre ocupa el mismo espacio, sin sentirse "invasivo"
+       en ningún tamaño. En celular se reduce con la media query de
+       abajo. La imagen recomendada (ver guía de tamaños) está
+       diseñada para encajar bien en este alto sin recortarse ni
+       dejar franjas vacías notorias. */
+    height:260px;
+}
+
+@media (max-width:600px){
+    .hero.hero--imagen{
+        height:150px;
+        margin-top:10px;
+        border-radius:16px;
+    }
+}
+
+/* Cuando el banner ya tiene su propio texto/diseño incorporado (no se
+   usa el título de texto del sistema), se quita el oscurecido — la
+   imagen del banner queda nítida, al frente, con un aro cálido en vez
+   de un velo encima. */
+.hero.hero--imagen.hero--sin-degradado{
+    background-image: var(--hero-bg-img);
+    box-shadow:0 18px 44px rgba(42,25,54,.35), 0 0 0 3px rgba(255,184,64,.5) inset;
+}
+
+
+/* ===== CARRITO — DOS COLUMNAS EN DESKTOP ===== */
+@media (min-width: 768px) {
+  .modal-cart-desktop {
+    max-width: 860px;
+  }
+  .modal-body-cart-cols {
+    display: flex;
+    gap: 24px;
+    align-items: flex-start;
+    padding: 20px 24px;
+  }
+  .cart-col-productos {
+    flex: 1 1 0;
+    min-width: 0;
+    overflow-y: auto;
+    max-height: 70vh;
+    padding-right: 8px;
+  }
+  .cart-col-datos {
+    width: 280px;
+    flex-shrink: 0;
+    border-left: 1px solid #e2e8f0;
+    padding-left: 24px;
+  }
+}
+
+.cart-minimo-aviso {
+  margin-top: 8px;
+  padding: 8px 12px;
+  background: #fff7ed;
+  border: 1px solid #fdba74;
+  border-radius: 8px;
+  color: #c2410c;
+  font-size: 13px;
+  font-weight: 600;
+}

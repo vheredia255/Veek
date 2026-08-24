@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Configuración inicial · VeekPOS</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+
+:root{
+  --navy-950: #070d1f;
+  --navy-900: #0b1633;
+  --navy-800: #122047;
+  --navy-600: #24397a;
+
+  --slate-50:  #f7f8fa;
+  --slate-200: #e2e6ed;
+  --slate-400: #99a3b3;
+  --slate-500: #6b7585;
+  --slate-600: #4c5567;
+
+  --green-600: #16a34a;
+  --red-500: #dc2626;
+  --red-50:  #fdecec;
+  --blue-500: #2563eb;
+
+  --font-ui: 'Inter', system-ui, -apple-system, Segoe UI, sans-serif;
+  --font-mono: 'SFMono-Regular', Consolas, monospace;
+}
+
+*{ box-sizing:border-box; }
+
+html,body{
+  margin:0; padding:0; min-height:100vh;
+  font-family:var(--font-ui);
+  -webkit-font-smoothing:antialiased;
+}
+
+body{
+  display:flex; align-items:center; justify-content:center;
+  padding:24px;
+  background:linear-gradient(160deg, var(--navy-950) 0%, var(--navy-800) 100%);
+}
+
+.wrap{ width:100%; max-width:480px; }
+
+.brand{
+  display:flex; align-items:center; justify-content:center;
+  gap:12px; margin-bottom:24px;
+}
+.brand .mark{
+  width:42px; height:42px; border-radius:11px;
+  background:linear-gradient(135deg, var(--blue-500), var(--navy-600));
+  display:flex; align-items:center; justify-content:center;
+  font-weight:800; font-size:18px; color:#fff; flex-shrink:0;
+}
+.brand .label{ color:#fff; text-align:left; line-height:1.15; }
+.brand .label strong{ display:block; font-size:17px; font-weight:700; }
+.brand .label small{ display:block; font-size:11px; font-weight:600; letter-spacing:.1em; color:rgba(255,255,255,.5); margin-top:2px; }
+
+.card{
+  background:#fff; border-radius:16px;
+  padding:28px 26px 24px;
+  box-shadow:0 24px 60px rgba(0,0,0,.3);
+}
+
+.card h1{ font-size:18px; font-weight:700; color:var(--navy-900); margin:0 0 6px; }
+.card .sub{ font-size:13px; color:var(--slate-500); margin:0 0 20px; line-height:1.5; }
+
+.field{ margin-bottom:18px; }
+.field label{ display:block; font-size:12.5px; font-weight:600; color:var(--slate-600); margin-bottom:6px; }
+.field label .opt{ font-weight:500; color:var(--slate-400); text-transform:none; letter-spacing:0; }
+.field input{
+  width:100%; border:1.5px solid var(--slate-200); border-radius:10px;
+  padding:11px 13px; font-size:13.5px; font-family:var(--font-mono);
+  color:var(--navy-900);
+}
+.field input:focus{ outline:none; border-color:var(--blue-500); box-shadow:0 0 0 3px rgba(37,99,235,.12); }
+.field .hint{ font-size:11.5px; color:var(--slate-400); margin-top:6px; line-height:1.4; }
+
+.step-num{
+  display:inline-flex; align-items:center; justify-content:center;
+  width:20px; height:20px; border-radius:50%;
+  background:var(--navy-900); color:#fff;
+  font-size:11px; font-weight:700; margin-right:8px; flex-shrink:0;
+}
+.field-title{
+  display:flex; align-items:center;
+  font-size:13.5px; font-weight:700; color:var(--navy-900);
+  margin-bottom:10px;
+}
+
+.step-block{ margin-bottom:22px; padding-bottom:4px; border-bottom:1px solid var(--slate-50); }
+.step-block:last-of-type{ border-bottom:none; }
+
+.error-box{
+  display:none; align-items:flex-start; gap:8px;
+  background:var(--red-50); color:var(--red-500);
+  font-size:13px; font-weight:600;
+  border-radius:10px; padding:10px 12px; margin:14px 0 0;
+  line-height:1.4;
+}
+.error-box.show{ display:flex; }
+
+.btn{
+  width:100%; margin-top:20px;
+  background:var(--navy-900); color:#fff;
+  border:none; border-radius:10px;
+  padding:13px; font-size:15px; font-weight:700;
+  font-family:var(--font-ui); cursor:pointer;
+  display:flex; align-items:center; justify-content:center; gap:8px;
+}
+.btn:hover{ background:var(--navy-800); }
+.btn:disabled{ background:var(--slate-200); cursor:not-allowed; }
+
+.spinner{
+  width:15px; height:15px;
+  border:2px solid rgba(255,255,255,.4);
+  border-top-color:#fff; border-radius:50%;
+  animation:spin .6s linear infinite;
+  display:none;
+}
+.btn.loading .spinner{ display:inline-block; }
+.btn.loading .btn-text{ display:none; }
+@keyframes spin{ to{ transform:rotate(360deg); } }
+
+.footnote{ text-align:center; font-size:11.5px; color:rgba(255,255,255,.45); margin-top:18px; }
+
+.check-overlay{
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:14px; padding:40px 10px; color:var(--slate-500); font-size:13.5px;
+}
+.check-overlay .spin-big{
+  width:26px; height:26px; border:3px solid var(--slate-200);
+  border-top-color:var(--blue-500); border-radius:50%;
+  animation:spin .7s linear infinite;
+}
+
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <div class="brand">
+    <div class="mark">V</div>
+    <div class="label">
+      <strong>VeekPOS</strong>
+      <small>CONFIGURACIÓN INICIAL</small>
+    </div>
+  </div>
+
+  <div class="card" id="card">
+
+    <!-- Se muestra un instante mientras chequeamos si esta caja ya
+         tiene una instalación previa guardada en SQLite. Evita el
+         parpadeo de mostrar el formulario y enseguida redirigir. -->
+    <div class="check-overlay" id="checkOverlay">
+      <div class="spin-big"></div>
+      <div>Revisando si esta caja ya está configurada…</div>
+    </div>
+
+    <div id="setupContent" style="display:none;">
+      <h1>Conectá esta caja con tu negocio</h1>
+      <p class="sub">Esta es la primera vez que se abre VeekPOS en esta computadora. Completá estos datos para conectar esta caja con tu backend y activar tu licencia — solo hay que hacerlo una vez.</p>
+
+      <form id="setupForm">
+
+        <div class="step-block">
+          <div class="field">
+            <div class="field-title"><span class="step-num">1</span> URL de Apps Script (API_URL)</div>
+            <input type="text" id="apiUrl" placeholder="https://script.google.com/macros/s/AKfycbw.../exec" autofocus required>
+            <div class="hint">La conseguís en tu Apps Script: Implementar → Administrar implementaciones → "URL de la aplicación web". Si no la tenés a mano, pedísela a quien te entregó el sistema.</div>
+          </div>
+        </div>
+
+        <div class="step-block">
+          <div class="field">
+            <div class="field-title"><span class="step-num">2</span> Activar tu licencia</div>
+            <input type="text" id="licenciaUrl" placeholder="URL del servidor de licencias — https://script.google.com/macros/s/AKfycbw.../exec" required style="margin-bottom:10px;">
+            <input type="email" id="licenciaEmail" placeholder="Correo de la licencia" autocomplete="username" required style="margin-bottom:10px; font-family:var(--font-ui);">
+            <input type="password" id="licenciaPassword" placeholder="Contraseña / PIN de la licencia" autocomplete="current-password" required style="font-family:var(--font-ui);">
+            <div class="hint">Estos datos te los pasa quien te vendió VeekPOS. Se usan para activar la licencia de esta caja — no hace falta volver a ingresarlos después.</div>
+          </div>
+        </div>
+
+        <div class="error-box" id="errorBox">
+          <span>⚠️</span>
+          <span id="errorTexto">Esta URL no parece válida. Tiene que empezar con https://script.google.com/macros/s/ y terminar en /exec</span>
+        </div>
+
+        <button type="submit" class="btn" id="btnGuardar">
+          <span class="spinner"></span>
+          <span class="btn-text">Conectar y continuar</span>
+        </button>
+      </form>
+    </div>
+
+  </div>
+
+  <p class="footnote">Esta configuración queda guardada solo en esta computadora — no hace falta repetirla cada vez que se abre la app.</p>
+
+</div>
+
+<script>
+
+// Mismo patrón de validación que usa el migrador: cualquier URL de
+// Apps Script válida, no una en particular.
+const PATRON_URL_APPS_SCRIPT = /^https:\/\/script\.google\.com\/macros\/s\/[A-Za-z0-9_-]+\/exec\/?$/;
+
+function normalizarUrl(url){
+  url = url.trim();
+  return url.endsWith("/") ? url.slice(0, -1) : url;
+}
+
+function mostrarError(mensaje){
+  const box = document.getElementById("errorBox");
+  document.getElementById("errorTexto").textContent = mensaje;
+  box.classList.add("show");
+}
+
+function ocultarError(){
+  document.getElementById("errorBox").classList.remove("show");
+}
+
+/**
+ * Devuelve el "bridge" de Electron disponible (veekpos es el nuevo
+ * preload.js, posOffline el alias de compatibilidad que ya crea
+ * pos-offline.js). setup.html se abre siempre en Electron, así que
+ * al menos uno de los dos debería existir.
+ */
+function obtenerBridge(){
+  return window.posOffline || window.veekpos || null;
+}
+
+/**
+ * CASO 2 — instalación previa ya existente.
+ *
+ * Antes, cada vez que se abría setup.html (por ejemplo tras
+ * actualizar los archivos de la app a una versión nueva) se volvía a
+ * mostrar el formulario vacío, y si alguien lo completaba de nuevo
+ * se pisaban la API URL y la licencia que ya estaban guardados y
+ * funcionando para ese cliente.
+ *
+ * Ahora, antes de mostrar el formulario, se chequea si esta caja ya
+ * tiene una API URL guardada en el SQLite local. Si la tiene, esta
+ * NO es una instalación nueva — es una caja ya configurada a la que
+ * se le acaban de actualizar los archivos (index.html/admin.js/etc).
+ * En ese caso no se pide nada de nuevo: se respetan los datos ya
+ * guardados y se pasa directo a login.html.
+ */
+async function yaHayInstalacionPrevia(bridge){
+  try{
+    // El bridge no expone un getter dedicado para la API URL — se
+    // guarda como una clave más de la config local genérica (mismo
+    // lugar donde se guarda sheet_id), vía obtenerConfigLocal/
+    // fijarConfigLocal. Por eso se lee así y no con un "obtenerApiUrl".
+    const apiUrlGuardada = await bridge.obtenerConfigLocal?.("api_url", "");
+    return !!(apiUrlGuardada && apiUrlGuardada.trim());
+  }catch(error){
+    console.error("Error al chequear si ya había una instalación previa:", error);
+    return false; // ante la duda, no bloquear: dejamos que se muestre el instalador
+  }
+}
+
+async function iniciar(){
+  const bridge = obtenerBridge();
+  const overlay = document.getElementById("checkOverlay");
+  const contenido = document.getElementById("setupContent");
+
+  if(!bridge){
+    overlay.innerHTML = `<div style="color:var(--red-500); text-align:center;">
+      No se pudo acceder al almacenamiento local de la app.<br>Cerrá y volvé a abrir VeekPOS.
+    </div>`;
+    return;
+  }
+
+  if(await yaHayInstalacionPrevia(bridge)){
+    // Instalación previa: no tocar nada, seguir directo al login con
+    // los mismos datos (Sheet ID, API URL, licencia) que ya tenía.
+    window.location.href = "login.html";
+    return;
+  }
+
+  // Instalación nueva: recién ahora mostramos el formulario.
+  overlay.style.display = "none";
+  contenido.style.display = "block";
+}
+
+iniciar();
+
+document.getElementById("setupForm").addEventListener("submit", async function(e){
+  e.preventDefault();
+  ocultarError();
+
+  const apiUrl     = normalizarUrl(document.getElementById("apiUrl").value);
+  const licenciaUrl        = normalizarUrl(document.getElementById("licenciaUrl").value);
+  const licenciaEmail      = document.getElementById("licenciaEmail").value.trim();
+  const licenciaPassword   = document.getElementById("licenciaPassword").value;
+
+  if(!PATRON_URL_APPS_SCRIPT.test(apiUrl)){
+    mostrarError("Esta URL de Apps Script no parece válida. Tiene que empezar con https://script.google.com/macros/s/ y terminar en /exec");
+    return;
+  }
+
+  if(!PATRON_URL_APPS_SCRIPT.test(licenciaUrl)){
+    mostrarError("La URL del servidor de licencias no parece válida. Tiene que empezar con https://script.google.com/macros/s/ y terminar en /exec");
+    return;
+  }
+
+  if(!licenciaEmail || !licenciaPassword){
+    mostrarError("Completá el correo y la contraseña (PIN) de tu licencia.");
+    return;
+  }
+
+  const bridge = obtenerBridge();
+  if(!bridge){
+    mostrarError("No se pudo acceder al almacenamiento local de la app. Cerrá y volvé a abrir VeekPOS.");
+    return;
+  }
+
+  const btn = document.getElementById("btnGuardar");
+  btn.disabled = true;
+  btn.classList.add("loading");
+
+  try{
+    // Confirmamos que la API URL realmente responde antes de guardar
+    // nada, para no dejar la caja "configurada" con datos que no sirven.
+    const respuesta = await fetch(apiUrl + "?action=productos");
+    if(!respuesta.ok){
+      throw new Error("La URL no respondió correctamente (código " + respuesta.status + ")");
+    }
+    // Alcanza con que la respuesta sea JSON válido — algunas acciones
+    // devuelven array plano, otras {success:true, productos:[...]}.
+    await respuesta.json();
+
+    // Activamos la licencia ANTES de guardar nada como definitivo —
+    // si el correo/contraseña están mal, preferimos que la persona
+    // los corrija ahora mismo en vez de dejar la caja a mitad de
+    // configurar con una licencia inválida.
+    if(bridge.fijarUrlServidorLicencia) await bridge.fijarUrlServidorLicencia(licenciaUrl);
+    if(!bridge.activarLicencia){
+      throw new Error("Esta versión de la app no puede activar licencias. Actualizá VeekPOS e intentá de nuevo.");
+    }
+    const resultadoLicencia = await bridge.activarLicencia(licenciaEmail, licenciaPassword);
+    if(!resultadoLicencia || !resultadoLicencia.success){
+      throw new Error((resultadoLicencia && resultadoLicencia.message) || "No se pudo activar la licencia con ese correo y esa contraseña.");
+    }
+
+    // Recién ahora que la API respondió bien y la licencia quedó
+    // activada, guardamos la API URL como config local (SQLite) de
+    // esta caja, vía fijarConfigLocal — el bridge no tiene un método
+    // dedicado "fijarApiUrl". El Sheet ID no se guarda ni se pide
+    // acá: el cliente Electron nunca lo necesita en tiempo de
+    // ejecución — el Code.gs desplegado detrás de la API_URL ya tiene
+    // el SPREADSHEET_ID grabado del lado del servidor, y es lo único
+    // que realmente hace falta para conectar esta caja.
+    if(!bridge.fijarConfigLocal){
+      throw new Error("Esta versión de la app no puede guardar la configuración local. Actualizá VeekPOS e intentá de nuevo.");
+    }
+    await bridge.fijarConfigLocal("api_url", apiUrl);
+
+    window.location.href = "login.html";
+
+  }catch(error){
+    console.error("Error al verificar/guardar los datos de conexión o la licencia:", error);
+    mostrarError(error.message || "No se pudo completar la configuración. Revisá los datos ingresados y que tengas internet en este momento.");
+    btn.disabled = false;
+    btn.classList.remove("loading");
+  }
+});
+
+</script>
+
+</body>
+</html>

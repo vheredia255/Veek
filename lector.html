@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>Lector de Códigos</title>
+
+<!-- Permite "Agregar a pantalla de inicio" y que abra sin barra de navegador -->
+<link rel="manifest" href="manifest.json">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="Lector QR">
+<link rel="apple-touch-icon" href="icon-512.png">
+<meta name="theme-color" content="#0f1830">
+
+<style>
+
+:root{
+    --navy-950:#0a1020;
+    --navy-900:#0f1830;
+    --indigo-600:#3d5afe;
+    --green-600:#1c7a3c;
+    --red-600:#b3261e;
+}
+
+*{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+
+html,body{
+    margin:0; padding:0;
+    width:100%; height:100%;
+    overflow:hidden;
+    font-family:system-ui, -apple-system, sans-serif;
+    background:var(--navy-950);
+    color:#fff;
+    -webkit-font-smoothing:antialiased;
+    user-select:none;
+}
+
+#pantallaInicio, #pantallaCamara, #pantallaResultado{
+    position:fixed; inset:0;
+    display:flex; flex-direction:column;
+    align-items:center; justify-content:center;
+    padding:24px;
+    text-align:center;
+}
+
+/* ===== PANTALLA INICIAL ===== */
+
+#pantallaInicio{
+    background:linear-gradient(160deg, var(--navy-950) 0%, var(--navy-900) 100%);
+}
+
+.inicio-icono{
+    font-size:64px;
+    margin-bottom:8px;
+}
+
+.inicio-titulo{
+    font-family:system-ui, -apple-system, sans-serif;
+    font-size:24px;
+    font-weight:700;
+    margin-bottom:8px;
+}
+
+.inicio-sub{
+    font-size:15px;
+    color:rgba(255,255,255,.6);
+    margin-bottom:36px;
+    max-width:280px;
+}
+
+.btn-escanear{
+    width:180px; height:180px;
+    border-radius:50%;
+    background:var(--indigo-600);
+    border:none;
+    color:#fff;
+    font-size:18px;
+    font-weight:700;
+    font-family:system-ui, -apple-system, sans-serif;
+    display:flex; flex-direction:column;
+    align-items:center; justify-content:center;
+    gap:10px;
+    box-shadow:0 0 0 0 rgba(61,90,254,.4);
+    animation:pulso 2.2s infinite;
+}
+
+.btn-escanear .ic{ font-size:46px; }
+
+@keyframes pulso{
+    0%{ box-shadow:0 0 0 0 rgba(61,90,254,.45); }
+    70%{ box-shadow:0 0 0 22px rgba(61,90,254,0); }
+    100%{ box-shadow:0 0 0 0 rgba(61,90,254,0); }
+}
+
+@media (prefers-reduced-motion:reduce){
+    .btn-escanear{ animation:none; }
+}
+
+.inicio-footnote{
+    position:absolute;
+    bottom:24px;
+    font-size:12px;
+    color:rgba(255,255,255,.35);
+}
+
+/* ===== PANTALLA CÁMARA ===== */
+
+#pantallaCamara{
+    display:none;
+    padding:0;
+    background:#000;
+}
+
+#video{
+    position:absolute; inset:0;
+    width:100%; height:100%;
+    object-fit:cover;
+}
+
+.camara-overlay{
+    position:absolute; inset:0;
+    display:flex; flex-direction:column;
+    align-items:center; justify-content:space-between;
+    padding:24px;
+    pointer-events:none;
+}
+
+.camara-marco{
+    width:240px; height:240px;
+    border:3px solid rgba(255,255,255,.85);
+    border-radius:20px;
+    box-shadow:0 0 0 2000px rgba(0,0,0,.45);
+    margin-top:auto;
+    margin-bottom:auto;
+}
+
+.camara-texto{
+    font-size:15px;
+    font-weight:600;
+    background:rgba(0,0,0,.55);
+    padding:10px 18px;
+    border-radius:30px;
+    margin-top:18px;
+}
+
+.btn-cancelar{
+    pointer-events:auto;
+    background:rgba(255,255,255,.15);
+    border:1.5px solid rgba(255,255,255,.4);
+    color:#fff;
+    font-size:15px;
+    font-weight:700;
+    padding:13px 32px;
+    border-radius:30px;
+    margin-bottom:env(safe-area-inset-bottom, 0px);
+}
+
+.camara-error{
+    pointer-events:auto;
+    max-width:280px;
+    font-size:15px;
+    line-height:1.4;
+}
+
+/* ===== PANTALLA RESULTADO ===== */
+
+#pantallaResultado{
+    display:none;
+    background:linear-gradient(160deg, var(--navy-950) 0%, var(--navy-900) 100%);
+}
+
+.resultado-etiqueta{
+    font-size:13px;
+    font-weight:700;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+    color:rgba(255,255,255,.5);
+    margin-bottom:18px;
+}
+
+.resultado-texto{
+    font-family:system-ui, -apple-system, sans-serif;
+    font-size:clamp(28px, 9vw, 46px);
+    font-weight:700;
+    line-height:1.2;
+    word-break:break-word;
+    max-width:100%;
+    margin-bottom:40px;
+}
+
+.btn-escanear-otro{
+    background:var(--indigo-600);
+    border:none;
+    color:#fff;
+    font-size:17px;
+    font-weight:700;
+    padding:18px 40px;
+    border-radius:40px;
+    width:100%;
+    max-width:320px;
+}
+
+</style>
+</head>
+<body>
+
+<!-- PANTALLA 1: inicio -->
+<div id="pantallaInicio">
+    <div class="inicio-icono">📦</div>
+    <div class="inicio-titulo">Lector de Códigos</div>
+    <div class="inicio-sub">Tocá el botón y apuntá la cámara al código QR del producto</div>
+
+    <button class="btn-escanear" id="btnEscanear">
+        <span class="ic">📷</span>
+        Escanear
+    </button>
+
+    <div class="inicio-footnote">Funciona sin internet</div>
+</div>
+
+<!-- PANTALLA 2: cámara -->
+<div id="pantallaCamara">
+    <video id="video" autoplay playsinline muted></video>
+    <div class="camara-overlay">
+        <div></div>
+        <div class="camara-marco" id="camaraMarco"></div>
+        <div>
+            <div class="camara-texto" id="camaraTexto">Apuntá al código QR</div>
+            <button class="btn-cancelar" id="btnCancelar" style="margin-top:18px;">Cancelar</button>
+        </div>
+    </div>
+</div>
+
+<!-- PANTALLA 3: resultado -->
+<div id="pantallaResultado">
+    <div class="resultado-etiqueta">Producto</div>
+    <div class="resultado-texto" id="resultadoTexto"></div>
+    <button class="btn-escanear-otro" id="btnEscanearOtro">📷 Escanear otro</button>
+</div>
+
+<script>
+
+const pantallaInicio = document.getElementById("pantallaInicio");
+const pantallaCamara = document.getElementById("pantallaCamara");
+const pantallaResultado = document.getElementById("pantallaResultado");
+const video = document.getElementById("video");
+const camaraTexto = document.getElementById("camaraTexto");
+const camaraMarco = document.getElementById("camaraMarco");
+
+let stream = null;
+let detectorTimer = null;
+
+function mostrarPantalla(pantalla){
+    [pantallaInicio, pantallaCamara, pantallaResultado].forEach(p => p.style.display = "none");
+    pantalla.style.display = "flex";
+}
+
+/** Pequeño feedback visual (el marco parpadea en verde) al detectar un código, antes de mostrar el resultado */
+function flashDeteccion(){
+    camaraMarco.style.borderColor = "#3ddc84";
+    camaraTexto.textContent = "✓ Código detectado";
+    camaraTexto.style.background = "rgba(28,122,60,.85)";
+}
+
+async function iniciarEscaneo(){
+
+    mostrarPantalla(pantallaCamara);
+    camaraMarco.style.borderColor = "rgba(255,255,255,.85)";
+    camaraTexto.style.background = "rgba(0,0,0,.55)";
+    camaraTexto.textContent = "Apuntá al código QR";
+
+    if(!("BarcodeDetector" in window)){
+        document.querySelector(".camara-overlay").innerHTML = `
+            <div class="camara-error">
+                ⚠️ Este teléfono no puede usar el lector de cámara.<br><br>
+                Probá con Chrome en un Android más reciente.
+            </div>
+            <button class="btn-cancelar" id="btnCancelarError">Volver</button>
+        `;
+        document.getElementById("btnCancelarError").addEventListener("click", volverAlInicio);
+        return;
+    }
+
+    try{
+
+        stream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: "environment" }
+        });
+        video.srcObject = stream;
+
+        const detector = new BarcodeDetector({ formats: ["qr_code"] });
+
+        detectorTimer = setInterval(async () => {
+            try{
+                const codigos = await detector.detect(video);
+                if(codigos.length > 0){
+                    const texto = codigos[0].rawValue;
+                    flashDeteccion();
+                    setTimeout(() => mostrarResultado(texto), 350);
+                }
+            }catch(error){
+                // Frame puntual sin poder leerse — se ignora, sigue intentando con el siguiente.
+            }
+        }, 350);
+
+    }catch(error){
+        console.error("Error al acceder a la cámara:", error);
+        document.querySelector(".camara-overlay").innerHTML = `
+            <div class="camara-error">
+                ⚠️ No se pudo abrir la cámara.<br><br>
+                Revisá que le dieras permiso de cámara a esta página.
+            </div>
+            <button class="btn-cancelar" id="btnCancelarError">Volver</button>
+        `;
+        document.getElementById("btnCancelarError").addEventListener("click", volverAlInicio);
+    }
+}
+
+function detenerCamara(){
+    if(detectorTimer){ clearInterval(detectorTimer); detectorTimer = null; }
+    if(stream){ stream.getTracks().forEach(t => t.stop()); stream = null; }
+}
+
+function mostrarResultado(texto){
+    detenerCamara();
+    document.getElementById("resultadoTexto").textContent = texto;
+    mostrarPantalla(pantallaResultado);
+}
+
+function volverAlInicio(){
+    detenerCamara();
+    mostrarPantalla(pantallaInicio);
+}
+
+document.getElementById("btnEscanear").addEventListener("click", iniciarEscaneo);
+document.getElementById("btnCancelar").addEventListener("click", volverAlInicio);
+document.getElementById("btnEscanearOtro").addEventListener("click", iniciarEscaneo);
+
+// Evita que el celular se quede con la cámara abierta de fondo si la
+// persona cambia de app o bloquea la pantalla sin cancelar primero.
+document.addEventListener("visibilitychange", () => {
+    if(document.hidden) detenerCamara();
+});
+
+// Necesario para que Chrome en Android permita instalar esta página
+// como app real (pantalla completa, sin barra de navegador) en vez de
+// un simple acceso directo — ver service-worker.js para más detalle.
+if("serviceWorker" in navigator){
+    navigator.serviceWorker.register("service-worker.js").catch((error) => {
+        console.error("No se pudo registrar el service worker:", error);
+        // Si falla, la página sigue funcionando igual para escanear —
+        // solo no se va a poder instalar como app de pantalla completa.
+    });
+}
+
+</script>
+
+</body>
+</html>

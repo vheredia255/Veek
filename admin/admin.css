@@ -449,6 +449,236 @@ html,body{
   text-align:center;
 }
 
+/* Tabla de Productos: columnas más angostas y compactas en general
+   (menos padding, foto más chica, botones de Acciones más ajustados)
+   para que las 9 columnas —incluida Acciones— entren siempre sin
+   scroll horizontal, sin ocultar ni recortar ningún texto. */
+#productos .tabla-productos-fixed{
+  table-layout:fixed; width:100%;
+}
+/* Anchos fijos por columna: reemplazan el reparto automático del
+   navegador (que antes le regalaba todo el espacio libre a la
+   columna Producto y dejaba esos huecos enormes entre columnas). */
+.col-p-check{ width:5%; }
+.col-p-foto{ width:8%; }
+.col-p-codigo{ width:12%; }
+.col-p-nombre{ width:29%; }
+.col-p-categoria{ width:10%; }
+.col-p-precio{ width:9%; }
+.col-p-stock{ width:7%; }
+.col-p-estado{ width:9%; }
+.col-p-acciones{ width:11%; }
+@media (max-width:900px){
+  /* La Categoría se oculta en este breakpoint: repartimos su
+     espacio entre Producto y Acciones. */
+  .col-p-categoria{ width:0; }
+  .col-p-nombre{ width:37%; }
+  .col-p-check{ width:6%; }
+  .col-p-foto{ width:10%; }
+  .col-p-codigo{ width:14%; }
+  .col-p-acciones{ width:14%; }
+}
+#productos .table thead th,
+#productos .table tbody td{
+  padding:8px 8px;
+  vertical-align:middle;
+}
+/* La celda de la foto pierde su padding para que la miniatura pueda
+   pegar contra los 4 bordes de la celda y así ocupar el 100% del
+   alto real de la fila (que lo termina definiendo la columna de
+   Acciones, más alta por sus 3 botones apilados). Se posiciona en
+   absoluto contra la celda en vez de depender de height:100%, que
+   en una tabla no siempre resuelve bien contra el alto real de la
+   fila en todos los navegadores. */
+#productos td.celda-foto-producto{ padding:0; position:relative; }
+#productos .tabla-producto-thumb{
+  position:absolute; inset:0;
+  width:auto; height:auto; min-height:0; border-radius:0;
+}
+#productos .celda-acciones-producto{
+  display:flex; flex-direction:column; gap:4px; width:max-content;
+  margin:0 auto;
+}
+#productos .celda-acciones-producto .ms-2{ margin-left:0 !important; }
+#productos .btn-accion-producto{
+  min-width:84px; padding:6px 10px; font-size:13px; white-space:nowrap;
+}
+/* Producto: que el nombre pueda partirse en varias líneas en vez de
+   forzar el ancho de la columna (y de toda la tabla) a lo ancho que
+   necesite el nombre más largo. */
+#productos table tbody td:nth-child(4){
+  white-space:normal; overflow-wrap:break-word; word-break:break-word;
+  min-width:120px;
+}
+
+/* Tabla de Productos: en pantallas angostas se oculta la columna
+   menos esencial (Categoría) y el texto de los botones de Acciones
+   (queda solo el ícono) para que la tabla entre completa sin
+   necesitar scroll horizontal — ni en tablet ni en celular. La Foto
+   se mantiene siempre visible. */
+@media (max-width:900px){
+  #productos table thead th:nth-child(5),
+  #productos table tbody td:nth-child(5){
+    display:none;
+  }
+  /* Sin el texto, el botón no necesita ancho mínimo de "Eliminar":
+     que se achique al tamaño del ícono para no empujar la tabla. */
+  #productos .btn-accion-texto{ display:none; }
+  #productos .btn-accion-producto{ min-width:0; padding:8px 10px; }
+  #productos .table thead th,
+  #productos .table tbody td{
+    padding:8px 6px; font-size:13px;
+  }
+  #productos .tabla-producto-thumb{ font-size:18px; }
+}
+
+@media (max-width:480px){
+  #productos .table thead th,
+  #productos .table tbody td{
+    padding:7px 4px; font-size:12.5px;
+  }
+  #productos .btn-accion-producto{ min-width:0; padding:7px 6px; font-size:13px; }
+  #productos .tabla-producto-thumb{ font-size:16px; }
+  /* Código: en el celular es la fila de texto que más ancho pide
+     (11 dígitos en fuente mono) — que también pueda cortar si hace falta. */
+  #productos table tbody td:nth-child(3){
+    overflow-wrap:break-word; word-break:break-word; white-space:normal;
+  }
+}
+
+/* Tabla de Productos en celulares angostos: 9 columnas con anchos por
+   porcentaje ya no entran nunca, por más que se comprima el padding —
+   los encabezados terminan pisándose entre sí. Por debajo de 640px se
+   abandona el layout de tabla y cada fila pasa a mostrarse como una
+   tarjeta apilada (foto + nombre arriba, el resto en pares
+   etiqueta/valor, acciones abajo de ancho completo). Todas las reglas
+   van con !important porque tienen que ganarle a los anchos por
+   colgroup/columna y al display:none de Categoría de los breakpoints
+   de arriba (900px/480px), que siguen aplicando en simultáneo. */
+@media (max-width:640px){
+  #productos .tabla-productos-fixed{
+    table-layout:auto !important;
+  }
+  #productos .tabla-productos-fixed thead{ display:none !important; }
+  #productos .tabla-productos-fixed,
+  #productos .tabla-productos-fixed tbody{
+    display:block !important; width:100% !important;
+  }
+  #productos .tabla-productos-fixed tr{
+    display:grid !important;
+    grid-template-columns:56px 1fr 1fr;
+    grid-template-areas:
+      "foto   nombre   nombre"
+      "foto   codigo   categoria"
+      "check  precio   stock"
+      "estado estado   estado"
+      "acciones acciones acciones";
+    column-gap:10px; row-gap:4px;
+    background:#fff;
+    border:1px solid var(--slate-200);
+    border-radius:12px;
+    padding:10px 12px;
+    margin-bottom:10px;
+    box-shadow:0 1px 3px rgba(0,0,0,.05);
+  }
+  #productos .tabla-productos-fixed tr:hover{ background:#fff !important; }
+  #productos .tabla-productos-fixed tr.arrastrando{ background:var(--slate-50) !important; }
+  /* Bootstrap .table-striped pinta de fondo cada <td> de las filas
+     impares (no toda la fila de una — celda por celda), y esa clase
+     sigue puesta en la tabla. Sumado al fondo gris propio de la
+     miniatura, esto es lo que se ve como "manchones" de distinto
+     color dentro de cada tarjeta. Ojo: Bootstrap 5.3 no pinta esto
+     con background-color sino con un box-shadow inset (para no
+     tapar los bordes) — hay que anular las dos propiedades, si no
+     el gris seguía viéndose aunque el background ya estuviera en
+     transparent. */
+  #productos .tabla-productos-fixed.table-striped > tbody > tr > *{
+    background-color:transparent !important;
+    box-shadow:none !important;
+  }
+
+  #productos .tabla-productos-fixed td{
+    display:block !important; width:auto !important;
+    padding:2px 0 !important; border:none !important;
+    font-size:13.5px;
+  }
+
+  /* Checkbox de selección para etiquetas */
+  #productos .tabla-productos-fixed td:nth-child(1){
+    grid-area:check; align-self:center;
+  }
+  #productos .tabla-productos-fixed .check-orden-inner{ justify-content:flex-start; }
+
+  /* Foto: cuadrado a la izquierda, ocupa las 3 primeras filas visuales.
+     Fondo casi imperceptible con borde propio en vez de un gris
+     sólido — así no se lee como un bloque de otro color pegado a la
+     tarjeta blanca, solo como el marco natural de la miniatura. */
+  #productos .tabla-productos-fixed td:nth-child(2){
+    grid-area:foto; position:relative;
+    width:56px !important; height:56px;
+    border-radius:8px; overflow:hidden;
+    background:var(--slate-50);
+    border:1px solid var(--slate-100);
+  }
+  #productos .tabla-productos-fixed td:nth-child(2) .tabla-producto-thumb{
+    position:absolute; inset:0; font-size:22px;
+  }
+
+  /* Nombre del producto: título de la tarjeta */
+  #productos .tabla-productos-fixed td:nth-child(4){
+    grid-area:nombre; font-weight:700; font-size:14.5px;
+    color:var(--navy-900); align-self:center;
+  }
+
+  /* Código, Categoría, Precio y Stock: pares etiqueta/valor chicos */
+  #productos .tabla-productos-fixed td:nth-child(3){ grid-area:codigo; }
+  #productos .tabla-productos-fixed td:nth-child(5){
+    grid-area:categoria; display:block !important; text-align:right;
+  }
+  #productos .tabla-productos-fixed td:nth-child(6){ grid-area:precio; }
+  #productos .tabla-productos-fixed td:nth-child(7){
+    grid-area:stock; text-align:right;
+  }
+  #productos .tabla-productos-fixed td:nth-child(3)::before{ content:"Código: "; }
+  #productos .tabla-productos-fixed td:nth-child(5)::before{ content:"Categoría: "; }
+  #productos .tabla-productos-fixed td:nth-child(6)::before{ content:"Precio: "; }
+  #productos .tabla-productos-fixed td:nth-child(7)::before{ content:"Stock: "; }
+  #productos .tabla-productos-fixed td:nth-child(3)::before,
+  #productos .tabla-productos-fixed td:nth-child(5)::before,
+  #productos .tabla-productos-fixed td:nth-child(6)::before,
+  #productos .tabla-productos-fixed td:nth-child(7)::before{
+    font-weight:600; color:var(--slate-500); font-size:11px;
+    text-transform:uppercase; letter-spacing:.03em;
+  }
+
+  /* Estado publicado/oculto: franja propia de ancho completo */
+  #productos .tabla-productos-fixed td:nth-child(8){
+    grid-area:estado; margin-top:4px; padding-top:6px !important;
+    border-top:1px solid var(--slate-100) !important;
+  }
+
+  /* Acciones: fila propia de ancho completo, botones en línea repartidos */
+  #productos .tabla-productos-fixed td:nth-child(9){
+    grid-area:acciones; display:flex !important; gap:6px;
+    margin-top:6px; padding-top:8px !important;
+    border-top:1px solid var(--slate-100) !important;
+  }
+  #productos .tabla-productos-fixed .celda-acciones-producto{
+    flex-direction:row !important; width:100% !important;
+  }
+  #productos .tabla-productos-fixed .btn-accion-producto{
+    flex:1; margin-left:0 !important;
+  }
+}
+
+#avisoOrdenProductos{
+  padding:18px 20px !important;
+  line-height:1.5 !important;
+  align-items:center !important;
+  height:auto !important; max-height:none !important;
+  overflow:visible !important;
+}
+
 /* ===================== POS SCREEN ===================== */
 
 .pos-wrap{
@@ -664,6 +894,52 @@ html,body{
 .tile-stock.out{ background:var(--red-50); color:var(--red-500); }
 .tile-stock.ok{ background:var(--green-50); color:var(--green-600); }
 .tile-stock.negativo{ background:var(--red-500); color:#fff; font-weight:700; }
+
+/* Reordenar productos (arrastrar y soltar) en la tabla de la sección "Productos" */
+.celda-check-orden{
+  position:relative; /* ancla para .check-orden-inner, que se estira a toda la celda */
+}
+.check-orden-inner{
+  position:absolute; inset:0;
+  display:flex; align-items:center; justify-content:center; gap:6px;
+  white-space:nowrap;
+}
+.drag-handle-producto{
+  color:var(--slate-400); cursor:grab; font-size:15px;
+  user-select:none; line-height:1; width:14px; text-align:center; flex:none;
+}
+tr.fila-arrastrable:hover .drag-handle-producto{ color:var(--slate-600); }
+tr.fila-arrastrable.arrastrando{ opacity:.4; background:var(--slate-100); }
+tr.fila-arrastrable{ cursor:default; }
+/* El checkbox nativo, sin estilo, se veía como un cuadrado blanco
+   suelto — le damos su propio tamaño/color para que combine con el
+   resto de la UI, y al quedar centrado verticalmente en la celda
+   (ver .celda-check-orden) ya no flota separado hacia abajo en filas
+   altas (con foto grande / varios botones de Acciones apilados). */
+/* El checkbox nativo, sin estilo, se veía como un cuadrado blanco
+   suelto flotando separado del ⠿ — lo reconstruimos por completo
+   (appearance:none + tilde propio) para que se vea igual en
+   cualquier navegador y no dependa del estilo por defecto del SO,
+   y queda centrado verticalmente en la celda (.celda-check-orden). */
+.check-producto-etiqueta,
+#checkTodosProductos{
+  -webkit-appearance:none; appearance:none;
+  width:16px; height:16px; margin:0; flex:none; padding:0;
+  border:1.5px solid var(--slate-300); border-radius:4px;
+  background:#fff; cursor:pointer; position:relative;
+  display:inline-block; box-shadow:none; outline:none;
+}
+.check-producto-etiqueta:checked,
+#checkTodosProductos:checked{
+  background:var(--blue-500); border-color:var(--blue-500);
+}
+.check-producto-etiqueta:checked::after,
+#checkTodosProductos:checked::after{
+  content:""; position:absolute; left:4px; top:1px;
+  width:4px; height:8px;
+  border:solid #fff; border-width:0 2px 2px 0;
+  transform:rotate(45deg);
+}
 
 /* Miniatura de producto en la tabla de la sección "Productos" */
 .tabla-producto-thumb{
@@ -1070,15 +1346,13 @@ html,body{
     size:80mm auto;
     margin:0;
   }
-
-  @page etiquetas{
-    size:A4;
-    margin:8mm;
-  }
-
-  #etiquetasPrintArea{
-    page:etiquetas;
-  }
+  /* El tamaño A4 para #etiquetasPrintArea ya NO se define acá con
+     "page:etiquetas" — el soporte de @page con nombre es poco confiable
+     en Chromium/Electron y hacía que el label se imprimiera con el
+     tamaño de página por defecto (80mm, como un ticket térmico).
+     En su lugar, admin.js inyecta un <style id="dynamicPrintPageSize">
+     con el @page correcto justo antes de cada impresión — ver
+     _setPrintPageSize() en admin.js. */
 }
 
 #thermalPrintFrame{
@@ -1098,13 +1372,21 @@ html,body{
   padding:10px 14px; font-size:13px; color:var(--slate-600);
 }
 
+/* Flexbox en vez de CSS Grid a propósito: Chromium (el motor de
+   impresión de Electron/Chrome) no respeta de forma confiable
+   break-inside:avoid en hijos de un contenedor grid al paginar —
+   es una limitación conocida del motor, no del CSS en sí. El
+   resultado práctico era etiquetas cortadas a la mitad entre el
+   final de una hoja A4 y el principio de la siguiente. Con flexbox
+   + flex-wrap, break-inside:avoid sí se respeta consistentemente. */
 .etiquetas-grid{
-  display:grid;
+  display:flex;
+  flex-wrap:wrap;
   gap:3mm;
   width:100%;
 }
-.etiquetas-grid.cols-3{ grid-template-columns:repeat(3, 1fr); }
-.etiquetas-grid.cols-4{ grid-template-columns:repeat(4, 1fr); }
+.etiquetas-grid.cols-3 > *{ flex:0 0 calc((100% - 2*3mm)/3); max-width:calc((100% - 2*3mm)/3); }
+.etiquetas-grid.cols-4 > *{ flex:0 0 calc((100% - 3*3mm)/4); max-width:calc((100% - 3*3mm)/4); }
 
 .etiqueta-item{
   border:1px dashed #999;
@@ -1136,7 +1418,7 @@ html,body{
 
 .etiqueta-precio{
   font-family:Arial, sans-serif;
-  font-size:12pt; font-weight:800; color:#000;
+  font-size:32pt; font-weight:800; color:#000;
   margin-top:0.5mm;
 }
 
@@ -1147,7 +1429,7 @@ html,body{
 }
 
 /* Variantes de columnas para la grilla de QR (más grandes que el código de barras) */
-.etiquetas-grid.cols-2{ grid-template-columns:repeat(2, 1fr); }
+.etiquetas-grid.cols-2 > *{ flex:0 0 calc((100% - 3mm)/2); max-width:calc((100% - 3mm)/2); }
 
 .qr-item{
   border:1px dashed #999;
@@ -1240,24 +1522,86 @@ html,body{
 
   .page-header h1{ font-size:19px; }
 
+  /* El encabezado de Punto de Venta ("Punto de Venta" + bajada
+     explicando cómo usarlo) es el que menos falta hace en celular —
+     una vez que el usuario ya sabe usarlo, esas dos líneas grandes
+     solo le roban alto a la pantalla donde más se necesita (buscador,
+     ticket, categorías y grilla de productos). Se compacta a una
+     sola línea chica en vez de sacarlo del todo, para no perder el
+     contexto de en qué sección está. */
+  #pos .page-header{
+    margin-bottom:10px;
+  }
+  #pos .page-header h1{
+    font-size:15px;
+  }
+  #pos .page-header .sub{
+    font-size:11px;
+    margin-top:1px;
+  }
+
+  /* Orden pedido en mobile: Buscador -> Ticket -> Último escaneado ->
+     Categorías -> Tarjetas de productos. .pos-left es un flex-column
+     que agrupa scanbar/scan-result/categorías/grid — para poder
+     intercalar el Ticket (que en el HTML es hermano de .pos-left, no
+     hijo) en el medio de esos 4 elementos, .pos-left pasa a
+     display:contents: "desaparece" como caja pero deja que sus hijos
+     participen directamente del flex de .pos-wrap, así el order de
+     cada uno se puede pisar individualmente. */
   .pos-wrap{
-    grid-template-columns:1fr;
+    display:flex;
+    flex-direction:column;
     height:auto; max-height:none;
     gap:14px;
   }
 
-  .pos-left{ height:auto; max-height:none; overflow:visible; }
-
-  /* On mobile the ticket sits below the grid */
-  .ticket-panel{
-    height:auto;
-    min-height:460px;
-    max-height:none;
+  .pos-left{
+    display:contents;
   }
 
-  .pos-grid-wrap{ flex:none; height:320px; max-height:320px; }
+  .pos-scanbar{ order:1; }
+  .ticket-panel{ order:2; }
+  .scan-result-panel{ order:3; }
+  .pos-categories{ order:4; }
+  .pos-grid-wrap{ order:5; }
 
-  .pos-product-grid{ grid-template-columns:repeat(auto-fill, minmax(110px, 1fr)); gap:8px; }
+  /* On mobile el ticket no tiene que reservar un bloque fijo de
+     460px (esté vacío o lleno) — eso solo empuja categorías y
+     productos más abajo y obliga a scrollear antes de poder tocar el
+     primer producto. Ahora se ajusta a su contenido real: chico
+     cuando está vacío, y con un tope propio de scroll interno cuando
+     se llena, para que agregar 10 productos no estire la página
+     entera — el usuario nunca pierde de vista el buscador/categorías
+     de arriba ni el botón Finalizar de abajo. */
+  .ticket-panel{
+    height:auto; min-height:0; max-height:none;
+  }
+  .ticket-items{
+    max-height:34vh;
+  }
+  .ticket-empty{ padding:18px 12px; gap:4px; }
+  .ticket-empty .ic{ font-size:22px; }
+  .ticket-empty strong{ font-size:13px; }
+  .ticket-empty span{ font-size:11.5px; }
+  .ticket-header{ padding:10px 14px 8px; }
+  .ticket-footer{ padding:10px 14px; }
+
+  /* "Último escaneado" no aporta nada en celular — se oculta
+     siempre, tenga o no producto cargado (antes solo se ocultaba en
+     reposo). */
+  .scan-result-panel{ display:none !important; }
+
+  .pos-scanbar{ padding:10px 12px; }
+  .pos-categories{ padding-bottom:4px; }
+  .cat-chip{ padding:6px 13px; font-size:12.5px; }
+
+  /* Con el ticket y el buscador ahora compactos, sobra alto para
+     mostrar más productos de una sola vez sin scrollear la grilla. */
+  .pos-grid-wrap{ height:44vh; max-height:44vh; }
+
+  /* 3 tarjetas por fila en vez de 2 (antes auto-fill con mínimo de
+     110px encajaba solo 2 en la mayoría de los celulares). */
+  .pos-product-grid{ grid-template-columns:repeat(3, 1fr); gap:8px; }
   .product-tile{ padding:8px; }
   .product-tile .tile-name{ font-size:12px; min-height:2.4em; }
   .product-tile .tile-price{ font-size:13px; }
@@ -1426,7 +1770,47 @@ html,body{
   font-family:var(--font-mono); font-size:18px;
 }
 
+/* ===================== RECORTE CUADRADO DE FOTO DE PRODUCTO ===================== */
+
+.crop-viewport{
+  width:280px; height:280px; max-width:100%;
+  border-radius:12px; overflow:hidden; position:relative;
+  background:var(--slate-100); border:1px solid var(--slate-200);
+  touch-action:none; cursor:grab; user-select:none;
+}
+.crop-viewport.dragging{ cursor:grabbing; }
+.crop-viewport img{
+  position:absolute; top:0; left:0;
+  transform-origin:0 0;
+  max-width:none; /* la imagen se dimensiona por transform, no por CSS width/height */
+  pointer-events:none; /* los eventos de drag los maneja el contenedor */
+}
+
 /* ===================== CONFIGURACIÓN (datos del local) ===================== */
+
+.cfg-tabs{
+  display:flex; gap:4px; flex-wrap:wrap;
+  background:#fff; border:1px solid var(--slate-200); border-radius:12px;
+  padding:5px; margin-bottom:16px;
+  position:sticky; top:-26px; z-index:10;
+}
+.cfg-tab-btn{
+  display:flex; align-items:center; gap:7px;
+  border:none; background:transparent; cursor:pointer;
+  padding:9px 14px; border-radius:8px;
+  font-size:13.5px; font-weight:600; color:var(--slate-500);
+  white-space:nowrap; transition:background .15s ease, color .15s ease;
+}
+.cfg-tab-btn:hover{ background:var(--slate-50); color:var(--slate-700); }
+.cfg-tab-btn.active{ background:var(--blue-50); color:var(--blue-500); }
+.cfg-tab-btn .ic{ font-size:15px; }
+.cfg-tab-pane{ display:none; }
+.cfg-tab-pane.active{ display:block; }
+
+@media (max-width:640px){
+  .cfg-tabs{ position:static; overflow-x:auto; flex-wrap:nowrap; -webkit-overflow-scrolling:touch; }
+  .cfg-tab-btn{ padding:8px 12px; font-size:13px; }
+}
 
 .config-preview-hint{
   display:flex; align-items:flex-start; gap:10px;
@@ -1570,6 +1954,55 @@ kbd{
 .pm-image-status.uploading{ color:var(--blue-500); }
 .pm-image-status.success{ color:var(--green-600); }
 .pm-image-status.error{ color:var(--red-500); }
+
+/* ===================== APARIENCIA — imagen del banner (recorte + preview) ===================== */
+
+/* Marco de recorte panorámico: mismo ratio que el hero de escritorio real
+   (max-width:1400px, height:260px en style.css) para que lo que el usuario
+   ve acá sea lo mismo que va a ver en la pantalla grande. */
+.crop-viewport--banner{
+  width:100%; max-width:460px; height:auto;
+  aspect-ratio:1400/260;
+}
+
+.banner-image-preview{ width:160px; height:80px; }
+
+.banner-preview-wrap{
+  display:flex; flex-wrap:wrap; gap:16px; margin-top:14px;
+}
+.banner-preview-item{ flex:1 1 260px; min-width:200px; }
+.banner-preview-item--mobile{ flex:0 0 160px; max-width:160px; }
+.banner-preview-label{
+  font-size:11.5px; font-weight:700; color:var(--slate-500);
+  margin-bottom:6px;
+}
+/* Simulan el .hero real de style.css: mismo gradiente de fondo, mismo
+   overlay oscuro sobre la imagen, mismo texto centrado. Los ratios
+   (1400:260 y 375:150) son los que produce el CSS del catálogo con
+   background-size:cover — así el recorte que el usuario elige arriba
+   se ve acá exactamente como se va a ver en cada tamaño de pantalla. */
+.banner-mock{
+  position:relative; overflow:hidden;
+  background-color:#241536;
+  background-image:radial-gradient(120% 140% at 15% 0%, #3a2856 0%, #241536 55%, #241536 100%);
+  background-size:cover; background-position:center;
+  display:flex; align-items:center; justify-content:center;
+  border-radius:16px;
+  box-shadow:0 8px 20px rgba(42,25,54,.25), 0 0 0 2px rgba(255,255,255,.14) inset;
+}
+.banner-mock--desktop{ width:100%; aspect-ratio:1400/260; }
+.banner-mock--mobile{ width:100%; aspect-ratio:375/150; }
+.banner-mock-overlay{
+  position:absolute; inset:0;
+  background:linear-gradient(180deg, rgba(36,21,54,.55), rgba(36,21,54,.72));
+}
+.banner-mock-text{
+  position:relative; z-index:1; text-align:center; color:#fff; padding:8px 10px;
+}
+.banner-mock-title{ font-weight:700; font-size:14px; letter-spacing:-.02em; }
+.banner-mock-subtitle{ font-size:11px; opacity:.85; margin-top:2px; }
+.banner-mock--mobile .banner-mock-title{ font-size:11px; }
+.banner-mock--mobile .banner-mock-subtitle{ font-size:9.5px; }
 
 /* ===================== MOVIMIENTOS DE CAJA ===================== */
 

@@ -1,0 +1,19 @@
+{
+  "name": "Lector de Códigos",
+  "short_name": "Lector QR",
+  "description": "Lee códigos QR con la cámara y muestra el contenido en pantalla, sin necesitar internet.",
+  "start_url": "lector.html",
+  "scope": "lector.html",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0a1020",
+  "theme_color": "#0f1830",
+  "icons": [
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

@@ -1,0 +1,1028 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Gestión de Stock</title>
+<meta name="theme-color" content="#0f1830">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="config.js"></script>
+
+<style>
+
+:root{
+    --navy-900:#0f1830;
+    --navy-950:#0a1020;
+    --indigo-600:#3d5afe;
+    --paper:#f6f3ec;
+    --ink-900:#171a23;
+    --ink-600:#5b6072;
+    --line:#e4dfd2;
+    --green-ok-bg:#dff5e3;
+    --green-ok-text:#1c7a3c;
+    --amber-low-bg:#fdecc8;
+    --amber-low-text:#9a5b06;
+    --red-out-bg:#fde2e2;
+    --red-out-text:#b3261e;
+}
+
+*{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+
+html,body{
+    margin:0; padding:0;
+    min-height:100vh;
+    font-family:'Inter', system-ui, sans-serif;
+    background:var(--paper);
+    color:var(--ink-900);
+    -webkit-font-smoothing:antialiased;
+}
+
+/* ===== HEADER ===== */
+
+header{
+    position:sticky; top:0; z-index:20;
+    background:var(--navy-900);
+    color:#fff;
+    padding:14px 16px;
+    box-shadow:0 2px 10px rgba(0,0,0,.15);
+}
+
+header h1{
+    font-family:'Space Grotesk', sans-serif;
+    font-size:17px;
+    margin:0 0 10px;
+    display:flex; align-items:center; gap:8px;
+}
+
+#buscador{
+    width:100%;
+    padding:11px 14px;
+    border-radius:10px;
+    border:none;
+    font-size:15px;
+    font-family:inherit;
+    background:rgba(255,255,255,.12);
+    color:#fff;
+}
+#buscador::placeholder{ color:rgba(255,255,255,.55); }
+#buscador:focus{ outline:2px solid var(--indigo-600); background:rgba(255,255,255,.18); }
+
+#resultadosInfo{
+    font-size:12px;
+    color:rgba(255,255,255,.6);
+    margin-top:8px;
+}
+
+/* ===== GRID ===== */
+
+main{
+    max-width:1200px;
+    margin:0 auto;
+    padding:16px;
+}
+
+#grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill, minmax(160px, 1fr));
+    gap:14px;
+}
+
+.tarjeta{
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:14px;
+    overflow:hidden;
+    display:flex;
+    flex-direction:column;
+    transition:box-shadow .15s;
+}
+.tarjeta.guardando{ opacity:.7; }
+.tarjeta.recien-guardado{ box-shadow:0 0 0 2px var(--green-ok-text); }
+
+.tarjeta .foto{
+    aspect-ratio:1/1;
+    background:#f1ede2;
+    display:flex; align-items:center; justify-content:center;
+    font-size:34px;
+    overflow:hidden;
+}
+.tarjeta .foto img{ width:100%; height:100%; object-fit:cover; display:block; }
+
+.tarjeta .info{ padding:10px 10px 12px; }
+
+.tarjeta .nombre{
+    font-size:13px;
+    font-weight:600;
+    line-height:1.3;
+    margin:0 0 2px;
+    display:-webkit-box;
+    -webkit-line-clamp:2;
+    -webkit-box-orient:vertical;
+    overflow:hidden;
+    min-height:34px;
+}
+
+.tarjeta .codigo{
+    font-size:11px;
+    color:var(--ink-600);
+    font-family:monospace;
+    margin-bottom:8px;
+}
+
+.stepper{
+    display:flex;
+    align-items:center;
+    gap:6px;
+}
+
+.stepper button{
+    width:34px; height:34px;
+    border-radius:8px;
+    border:1px solid var(--line);
+    background:var(--paper);
+    font-size:18px;
+    font-weight:700;
+    color:var(--navy-900);
+    cursor:pointer;
+    flex-shrink:0;
+    display:flex; align-items:center; justify-content:center;
+}
+.stepper button:active{ background:var(--indigo-600); color:#fff; }
+
+.stepper input{
+    flex:1;
+    min-width:0;
+    text-align:center;
+    font-size:15px;
+    font-weight:700;
+    font-family:monospace;
+    padding:7px 2px;
+    border-radius:8px;
+    border:1px solid var(--line);
+}
+.stepper input:focus{ outline:2px solid var(--indigo-600); }
+
+.stepper input.stock-negativo{ background:var(--red-out-bg); color:var(--red-out-text); border-color:var(--red-out-text); }
+.stepper input.stock-bajo{ background:var(--amber-low-bg); color:var(--amber-low-text); }
+.stepper input.stock-ok{ background:var(--green-ok-bg); color:var(--green-ok-text); }
+
+.estado-guardado{
+    font-size:10.5px;
+    text-align:center;
+    margin-top:5px;
+    height:13px;
+    color:var(--green-ok-text);
+}
+.estado-guardado.error{ color:var(--red-out-text); }
+
+#sinResultados, #cargando{
+    text-align:center;
+    color:var(--ink-600);
+    padding:60px 20px;
+    font-size:14px;
+}
+
+.toast-stack{
+    position:fixed; bottom:16px; left:50%; transform:translateX(-50%);
+    z-index:9999;
+    display:flex; flex-direction:column; gap:8px;
+    align-items:center;
+}
+.toast{
+    background:var(--navy-950); color:#fff;
+    padding:10px 18px; border-radius:10px;
+    font-size:13.5px;
+    box-shadow:0 4px 16px rgba(0,0,0,.25);
+    animation:toast-in .2s ease;
+}
+.toast.error{ background:var(--red-out-text); }
+.toast.success{ background:var(--green-ok-text); }
+@keyframes toast-in{ from{ opacity:0; transform:translateY(8px); } to{ opacity:1; transform:translateY(0); } }
+
+/* ===== LOGIN ===== */
+
+#pantallaLogin{
+    position:fixed; inset:0; z-index:100;
+    background:var(--navy-950);
+    display:flex; align-items:center; justify-content:center;
+    padding:24px;
+}
+
+.caja-login{
+    width:100%; max-width:340px;
+    background:var(--navy-900);
+    border-radius:16px;
+    padding:28px 24px;
+    color:#fff;
+    box-shadow:0 10px 40px rgba(0,0,0,.4);
+}
+
+.caja-login h2{
+    font-family:'Space Grotesk', sans-serif;
+    font-size:19px;
+    margin:0 0 6px;
+    text-align:center;
+}
+.caja-login p{
+    font-size:13px;
+    color:rgba(255,255,255,.55);
+    text-align:center;
+    margin:0 0 20px;
+}
+
+.caja-login input{
+    width:100%;
+    padding:12px 14px;
+    border-radius:10px;
+    border:1px solid rgba(255,255,255,.15);
+    background:rgba(255,255,255,.08);
+    color:#fff;
+    font-size:15px;
+    font-family:inherit;
+    margin-bottom:10px;
+}
+.caja-login input::placeholder{ color:rgba(255,255,255,.4); }
+.caja-login input:focus{ outline:2px solid var(--indigo-600); background:rgba(255,255,255,.12); }
+
+.caja-login button{
+    width:100%;
+    padding:12px;
+    border-radius:10px;
+    border:none;
+    background:var(--indigo-600);
+    color:#fff;
+    font-size:15px;
+    font-weight:600;
+    font-family:inherit;
+    cursor:pointer;
+    margin-top:6px;
+}
+.caja-login button:disabled{ opacity:.6; }
+
+#errorLogin{
+    color:#ff8a8a;
+    font-size:12.5px;
+    text-align:center;
+    margin-top:10px;
+    min-height:16px;
+}
+
+#contenidoPrincipal{ display:none; }
+
+/* ===== RECEPCIÓN DE MERCADERÍA (escaneo) ===== */
+
+#pantallaRecepcion{
+    position:fixed; inset:0; z-index:90;
+    background:var(--navy-950);
+    display:none;
+    flex-direction:column;
+}
+
+.recepcion-header{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:14px 16px;
+    color:#fff;
+}
+.recepcion-header h2{
+    font-family:'Space Grotesk', sans-serif;
+    font-size:16px; margin:0;
+}
+.recepcion-header button{
+    background:rgba(255,255,255,.12);
+    border:none; color:#fff;
+    width:34px; height:34px; border-radius:8px;
+    font-size:16px; cursor:pointer;
+}
+
+.camara-wrap{
+    position:relative;
+    flex:1;
+    min-height:200px;
+    background:#000;
+    overflow:hidden;
+    display:flex; align-items:center; justify-content:center;
+}
+.camara-wrap video{ width:100%; height:100%; object-fit:cover; }
+
+.camara-marco{
+    position:absolute; inset:14% 8%;
+    border:3px solid rgba(255,255,255,.85);
+    border-radius:16px;
+    pointer-events:none;
+    transition:border-color .15s;
+}
+.camara-texto{
+    position:absolute; bottom:16px; left:50%; transform:translateX(-50%);
+    background:rgba(0,0,0,.6); color:#fff;
+    padding:7px 16px; border-radius:20px;
+    font-size:13px; white-space:nowrap;
+}
+.camara-error{
+    color:#fff; text-align:center; padding:20px; font-size:14px; line-height:1.6;
+}
+
+.ingreso-manual{
+    display:flex; gap:8px;
+    padding:10px 14px;
+    background:var(--navy-900);
+}
+.ingreso-manual input{
+    flex:1; min-width:0;
+    padding:10px 12px;
+    border-radius:10px;
+    border:1px solid rgba(255,255,255,.15);
+    background:rgba(255,255,255,.08);
+    color:#fff;
+    font-size:14px;
+}
+.ingreso-manual input::placeholder{ color:rgba(255,255,255,.4); font-size:12.5px; }
+.ingreso-manual input:focus{ outline:2px solid var(--indigo-600); }
+.ingreso-manual button{
+    flex-shrink:0;
+    padding:0 16px;
+    border-radius:10px;
+    border:none;
+    background:var(--indigo-600);
+    color:#fff;
+    font-size:13.5px;
+    font-weight:600;
+    cursor:pointer;
+}
+
+#colaRecepcion{
+    max-height:44vh;
+    overflow-y:auto;
+    background:var(--paper);
+    border-radius:16px 16px 0 0;
+}
+
+.cola-item{
+    display:flex; align-items:center; gap:10px;
+    padding:10px 14px;
+    border-bottom:1px solid var(--line);
+}
+.cola-item .cola-info{ flex:1; min-width:0; }
+.cola-item .cola-nombre{ font-size:13.5px; font-weight:600; margin:0; }
+.cola-item .cola-detalle{ font-size:11.5px; color:var(--ink-600); margin-top:2px; }
+.cola-item .cola-detalle b{ color:var(--green-ok-text); }
+.cola-item .cola-cantidad{
+    width:56px; text-align:center; font-weight:700; font-family:monospace;
+    border:1px solid var(--line); border-radius:8px; padding:6px 2px;
+}
+.cola-item button{
+    width:30px; height:30px; border-radius:8px; border:1px solid var(--line);
+    background:#fff; font-size:13px; cursor:pointer; flex-shrink:0;
+}
+
+.cola-item.no-encontrado{ background:var(--red-out-bg); }
+.cola-item.no-encontrado .cola-nombre{ color:var(--red-out-text); }
+
+.recepcion-footer{
+    background:var(--paper);
+    padding:12px 14px 16px;
+    border-top:1px solid var(--line);
+}
+.recepcion-footer button{
+    width:100%;
+    padding:13px;
+    border-radius:12px;
+    border:none;
+    background:var(--green-ok-text);
+    color:#fff;
+    font-size:15px;
+    font-weight:700;
+    cursor:pointer;
+}
+.recepcion-footer button:disabled{ opacity:.5; }
+.recepcion-footer .sin-items{
+    text-align:center; color:var(--ink-600); font-size:13px; padding:8px;
+}
+
+</style>
+</head>
+<body>
+
+<div id="pantallaLogin">
+    <div class="caja-login">
+        <h2>📦 Gestión de Stock</h2>
+        <p>Ingresá la contraseña de depósito</p>
+        <input type="password" id="loginPassword" placeholder="Contraseña" autocomplete="current-password">
+        <button type="button" id="btnLogin" onclick="intentarLogin()">Ingresar</button>
+        <div id="errorLogin"></div>
+    </div>
+</div>
+
+<div id="contenidoPrincipal">
+<header>
+    <h1>📦 Gestión de Stock</h1>
+    <div style="display:flex; gap:8px; margin-bottom:8px;">
+        <input type="text" id="buscador" placeholder="🔍 Buscar por código o nombre..." oninput="filtrarYRenderizar()" style="flex:1;">
+        <button type="button" onclick="abrirRecepcion()" style="flex-shrink:0; background:var(--indigo-600); color:#fff; border:none; border-radius:10px; padding:0 16px; font-size:14px; font-weight:600; cursor:pointer;">📷 Recibir</button>
+    </div>
+    <div id="resultadosInfo"></div>
+</header>
+
+<main>
+    <div id="cargando">Cargando productos...</div>
+    <div id="sinResultados" style="display:none;">No se encontraron productos.</div>
+    <div id="grid"></div>
+</main>
+
+</div>
+
+<div class="toast-stack" id="toastStack"></div>
+
+<!-- ===== RECEPCIÓN DE MERCADERÍA ===== -->
+<div id="pantallaRecepcion">
+    <div class="recepcion-header">
+        <h2>📷 Recibir mercadería</h2>
+        <button type="button" onclick="cerrarRecepcion()">✕</button>
+    </div>
+
+    <div class="camara-wrap">
+        <video id="videoRecepcion" autoplay playsinline muted></video>
+        <div class="camara-marco" id="marcoRecepcion"></div>
+        <div class="camara-texto" id="textoRecepcion">Apuntá al código de barras</div>
+    </div>
+
+    <div class="ingreso-manual">
+        <input type="text" id="inputCodigoManual" placeholder="¿La boleta no tiene código de barras? Escribí el número acá" inputmode="numeric">
+        <button type="button" onclick="agregarCodigoManual()">+ Agregar</button>
+    </div>
+
+    <div id="colaRecepcion"></div>
+
+    <div class="recepcion-footer">
+        <button type="button" id="btnConfirmarRecepcion" onclick="confirmarRecepcion()" disabled>Escaneá un producto para empezar</button>
+    </div>
+</div>
+
+<script>
+
+const API_URL = CONFIG_NEGOCIO.API_URL;
+cargarConfigNegocio().then(() => {
+  document.title = "Gestión de Stock · " + CONFIG_NEGOCIO.NOMBRE_NEGOCIO;
+});
+
+let productos = [];
+let guardadoPendiente = {}; // codigo -> timeoutId, para debounce por tarjeta
+
+/* ---------- login (contraseña propia, distinta de la del panel admin) ---------- */
+
+function verificarSesion(){
+    if(sessionStorage.getItem("stock_auth") === "true"){
+        mostrarContenidoPrincipal();
+    }else{
+        document.getElementById("loginPassword").focus();
+    }
+}
+
+async function intentarLogin(){
+    const password = document.getElementById("loginPassword").value;
+    const errorEl = document.getElementById("errorLogin");
+    const btn = document.getElementById("btnLogin");
+
+    if(!password){
+        errorEl.textContent = "Ingresá la contraseña.";
+        return;
+    }
+
+    btn.disabled = true;
+    errorEl.textContent = "";
+
+    try{
+        const r = await fetchConTimeout(
+            `${API_URL}?action=loginStock&password=${encodeURIComponent(password)}`,
+            12000
+        );
+        const data = await r.json();
+
+        if(data.success){
+            sessionStorage.setItem("stock_auth", "true");
+            mostrarContenidoPrincipal();
+        }else{
+            errorEl.textContent = "Contraseña incorrecta.";
+        }
+    }catch(error){
+        console.error(error);
+        errorEl.textContent = "Error de conexión — revisá internet e intentá de nuevo.";
+    }finally{
+        btn.disabled = false;
+    }
+}
+
+// Enter en el campo de contraseña manda el login — más rápido en el celular.
+document.addEventListener("DOMContentLoaded", () => {
+    document.getElementById("loginPassword").addEventListener("keydown", e => {
+        if(e.key === "Enter") intentarLogin();
+    });
+});
+
+function mostrarContenidoPrincipal(){
+    document.getElementById("pantallaLogin").style.display = "none";
+    document.getElementById("contenidoPrincipal").style.display = "block";
+    cargarProductos();
+}
+
+/* ---------- utilidades ---------- */
+
+function escapeHtml(t){
+    const d = document.createElement("div");
+    d.textContent = String(t ?? "");
+    return d.innerHTML;
+}
+
+function normalizar(t){
+    return String(t || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+}
+
+function mostrarToast(mensaje, tipo){
+    const stack = document.getElementById("toastStack");
+    const el = document.createElement("div");
+    el.className = "toast" + (tipo ? " " + tipo : "");
+    el.textContent = mensaje;
+    stack.appendChild(el);
+    setTimeout(() => el.remove(), 3000);
+}
+
+/* ---------- carga inicial ---------- */
+
+// Reintentos simples con timeout — conexiones de depósito/celular
+// suelen ser más inestables que las de una PC de local.
+async function fetchConTimeout(url, timeoutMs){
+    const controlador = new AbortController();
+    const timer = setTimeout(() => controlador.abort(), timeoutMs || 12000);
+    try{
+        const r = await fetch(url, { signal: controlador.signal });
+        clearTimeout(timer);
+        return r;
+    }catch(e){
+        clearTimeout(timer);
+        throw e;
+    }
+}
+
+async function cargarProductos(){
+    try{
+        const res = await fetchConTimeout(API_URL + "?action=productosAdmin", 15000);
+        const data = await res.json();
+        productos = data.productos || [];
+        document.getElementById("cargando").style.display = "none";
+        filtrarYRenderizar();
+    }catch(error){
+        console.error(error);
+        document.getElementById("cargando").textContent = "No se pudo cargar el catálogo — revisá la conexión y recargá la página.";
+    }
+}
+
+/* ---------- filtro y render ---------- */
+
+function filtrarYRenderizar(){
+    const termino = normalizar(document.getElementById("buscador").value);
+
+    const lista = !termino ? productos : productos.filter(p =>
+        normalizar(p.CODIGO).includes(termino) || normalizar(p.PRODUCTO).includes(termino)
+    );
+
+    const info = document.getElementById("resultadosInfo");
+    info.textContent = lista.length === productos.length
+        ? `${productos.length} productos`
+        : `${lista.length} de ${productos.length} productos`;
+
+    const grid = document.getElementById("grid");
+    const sinResultados = document.getElementById("sinResultados");
+
+    if(lista.length === 0){
+        grid.innerHTML = "";
+        sinResultados.style.display = "block";
+        return;
+    }
+    sinResultados.style.display = "none";
+
+    // Render simple (sin chunking): estas tarjetas son livianas
+    // (solo foto + nombre + stepper), y esta página es para uso
+    // interno de depósito, no para catálogos de miles de productos.
+    grid.innerHTML = lista.map(p => tarjetaHtml(p)).join("");
+}
+
+function claseStock(stock){
+    if(stock < 0) return "stock-negativo";
+    if(stock <= 5) return "stock-bajo";
+    return "stock-ok";
+}
+
+function tarjetaHtml(p){
+    const stock = Number(p.STOCK ?? 0);
+    const imagen = p.IMAGEN ? String(p.IMAGEN).trim() : "";
+    const codigo = escapeHtml(p.CODIGO);
+
+    return `
+    <div class="tarjeta" id="tarjeta-${codigo}" data-codigo="${codigo}">
+        <div class="foto">
+            ${imagen
+                ? `<img src="${imagen}" alt="" loading="lazy" onerror="this.parentElement.innerHTML='📦';">`
+                : "📦"}
+        </div>
+        <div class="info">
+            <p class="nombre">${escapeHtml(p.PRODUCTO)}</p>
+            <div class="codigo">${codigo}</div>
+            <div class="stepper">
+                <button type="button" onclick="cambiarStock('${codigo}', -1)" aria-label="Restar">−</button>
+                <input type="number" step="1" class="${claseStock(stock)}" id="stock-${codigo}" value="${stock}"
+                    onchange="guardarStockDesdeInput('${codigo}')">
+                <button type="button" onclick="cambiarStock('${codigo}', 1)" aria-label="Sumar">+</button>
+            </div>
+            <div class="estado-guardado" id="estado-${codigo}"></div>
+        </div>
+    </div>`;
+}
+
+/* ---------- edición de stock ---------- */
+
+function cambiarStock(codigo, delta){
+    const input = document.getElementById("stock-" + codigo);
+    const nuevo = (Number(input.value) || 0) + delta;
+    input.value = nuevo;
+    input.className = claseStock(nuevo);
+    programarGuardado(codigo, nuevo);
+}
+
+function guardarStockDesdeInput(codigo){
+    const input = document.getElementById("stock-" + codigo);
+    const nuevo = Number(input.value);
+    if(isNaN(nuevo)){ input.value = 0; return; }
+    input.className = claseStock(nuevo);
+    programarGuardado(codigo, nuevo);
+}
+
+// Debounce por tarjeta: si el cajero toca "+" varias veces seguidas,
+// no se manda un guardado por cada click — se espera a que se
+// detenga un instante y se manda uno solo con el valor final.
+function programarGuardado(codigo, nuevoStock){
+    if(guardadoPendiente[codigo]) clearTimeout(guardadoPendiente[codigo]);
+    const estadoEl = document.getElementById("estado-" + codigo);
+    if(estadoEl){ estadoEl.textContent = "Guardando..."; estadoEl.classList.remove("error"); }
+
+    guardadoPendiente[codigo] = setTimeout(() => guardarStock(codigo, nuevoStock), 500);
+}
+
+async function guardarStock(codigo, nuevoStock){
+    const producto = productos.find(p => String(p.CODIGO) === String(codigo));
+    if(!producto){ return; }
+
+    const tarjeta = document.getElementById("tarjeta-" + codigo);
+    const estadoEl = document.getElementById("estado-" + codigo);
+    if(tarjeta) tarjeta.classList.add("guardando");
+
+    try{
+        // actualizarProducto sobreescribe el producto entero — hay que
+        // mandar todos los campos que ya tenía, no solo el stock, para
+        // no perder categoría, imagen, publicado, destacado u oferta.
+        const params = new URLSearchParams({
+            action: "actualizarProducto",
+            codigoOriginal: producto.CODIGO,
+            CODIGO: producto.CODIGO,
+            PRODUCTO: producto.PRODUCTO,
+            CATEGORIA: producto.CATEGORIA || "",
+            PRECIO: producto.PRECIO || 0,
+            STOCK: nuevoStock,
+            IMAGEN: producto.IMAGEN || "",
+            PUBLICADO: producto.PUBLICADO || "SI",
+            DESTACADO: producto.DESTACADO || "NO",
+            OFERTA: producto.OFERTA || "NO",
+            CODIGO_CAJA: producto.CODIGO_CAJA || "",
+            UNIDADES_POR_CAJA: producto.UNIDADES_POR_CAJA || 0,
+            PRECIO_CAJA: producto.PRECIO_CAJA || 0
+        });
+
+        const response = await fetchConTimeout(API_URL + "?" + params.toString(), 15000);
+        const data = await response.json();
+
+        if(!data.success){
+            throw new Error(data.message || "No se pudo guardar");
+        }
+
+        producto.STOCK = nuevoStock;
+        if(estadoEl){ estadoEl.textContent = "✓ Guardado"; estadoEl.classList.remove("error"); }
+        if(tarjeta){
+            tarjeta.classList.add("recien-guardado");
+            setTimeout(() => tarjeta.classList.remove("recien-guardado"), 700);
+        }
+        setTimeout(() => { if(estadoEl && estadoEl.textContent === "✓ Guardado") estadoEl.textContent = ""; }, 2000);
+
+    }catch(error){
+        console.error("Error guardando stock:", error);
+        if(estadoEl){ estadoEl.textContent = "⚠️ No se guardó — reintentá"; estadoEl.classList.add("error"); }
+        mostrarToast(`No se pudo actualizar el stock de "${producto.PRODUCTO}" — revisá la conexión`, "error");
+    }finally{
+        if(tarjeta) tarjeta.classList.remove("guardando");
+    }
+}
+
+/* ===================== RECEPCIÓN DE MERCADERÍA (escaneo) ===================== */
+// Pensado para cuando llega la mercadería del proveedor: se escanea
+// cada código de barras del bulto, se arma una lista con lo
+// escaneado, y recién al final se confirma todo junto — cada
+// confirmación SUMA al stock que ya había (no lo reemplaza), usando
+// la misma acción del panel admin que ya protege contra que dos
+// cargas simultáneas se pisen entre sí.
+
+let streamRecepcion = null;
+let timerRecepcion = null;
+let colaRecepcion = []; // [{codigo, PRODUCTO, cantidad, stockActual, encontrado}]
+let ultimoCodigoLeido = null;
+let ultimoCodigoTimeout = null;
+
+async function abrirRecepcion(){
+    colaRecepcion = [];
+    renderColaRecepcion();
+    document.getElementById("pantallaRecepcion").style.display = "flex";
+
+    const video = document.getElementById("videoRecepcion");
+    const textoEl = document.getElementById("textoRecepcion");
+    const marcoEl = document.getElementById("marcoRecepcion");
+
+    if(!("BarcodeDetector" in window)){
+        document.querySelector(".camara-wrap").innerHTML = `
+            <div class="camara-error">
+                ⚠️ Este teléfono/navegador no puede usar el lector de cámara.<br><br>
+                Probá con Chrome en un Android más reciente.
+            </div>`;
+        return;
+    }
+
+    try{
+        streamRecepcion = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+        video.srcObject = streamRecepcion;
+
+        // EAN-13/EAN-8/UPC son los formatos típicos de códigos de
+        // barras de productos; code_128 y code_39 cubren algunos
+        // proveedores que usan sus propias etiquetas internas.
+        const detector = new BarcodeDetector({
+            formats: ["ean_13", "ean_8", "upc_a", "upc_e", "code_128", "code_39", "qr_code"]
+        });
+
+        timerRecepcion = setInterval(async () => {
+            try{
+                const codigos = await detector.detect(video);
+                if(codigos.length > 0){
+                    const texto = codigos[0].rawValue.trim();
+
+                    // Evita procesar el mismo código muchas veces seguidas
+                    // mientras la cámara lo sigue viendo encuadrado.
+                    if(texto === ultimoCodigoLeido) return;
+                    ultimoCodigoLeido = texto;
+                    clearTimeout(ultimoCodigoTimeout);
+                    ultimoCodigoTimeout = setTimeout(() => { ultimoCodigoLeido = null; }, 1500);
+
+                    marcoEl.style.borderColor = "#3ddc84";
+                    textoEl.textContent = "✓ " + texto;
+                    setTimeout(() => {
+                        marcoEl.style.borderColor = "rgba(255,255,255,.85)";
+                        textoEl.textContent = "Apuntá al código de barras";
+                    }, 600);
+
+                    procesarCodigoEscaneado(texto);
+                }
+            }catch(error){
+                // Un frame puntual que no se pudo leer bien — se ignora, sigue con el siguiente.
+            }
+        }, 350);
+
+    }catch(error){
+        console.error("Error al acceder a la cámara:", error);
+        document.querySelector(".camara-wrap").innerHTML = `
+            <div class="camara-error">
+                ⚠️ No se pudo abrir la cámara.<br><br>
+                Revisá que le hayas dado permiso de cámara a esta página.
+            </div>`;
+    }
+}
+
+function cerrarRecepcion(){
+    if(timerRecepcion){ clearInterval(timerRecepcion); timerRecepcion = null; }
+    if(streamRecepcion){ streamRecepcion.getTracks().forEach(t => t.stop()); streamRecepcion = null; }
+    document.getElementById("pantallaRecepcion").style.display = "none";
+}
+
+function agregarCodigoManual(){
+    const input = document.getElementById("inputCodigoManual");
+    const codigo = input.value.trim();
+    if(!codigo) return;
+
+    procesarCodigoEscaneado(codigo);
+    input.value = "";
+    input.focus(); // sigue en el campo, para cargar el próximo código de la boleta sin tener que tocar de nuevo
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    const inputManual = document.getElementById("inputCodigoManual");
+    if(inputManual){
+        inputManual.addEventListener("keydown", e => {
+            if(e.key === "Enter") agregarCodigoManual();
+        });
+    }
+});
+
+function procesarCodigoEscaneado(codigo){
+    // Primero, código unitario normal — cada escaneo repetido suma 1 unidad.
+    const existenteUnidad = colaRecepcion.find(i => i.codigo === codigo && !i.esCaja);
+    if(existenteUnidad){
+        existenteUnidad.cantidad++;
+        renderColaRecepcion();
+        return;
+    }
+
+    const producto = productos.find(p => String(p.CODIGO).trim() === codigo);
+    if(producto){
+        colaRecepcion.unshift({
+            codigo,
+            PRODUCTO: producto.PRODUCTO,
+            cantidad: 1,
+            stockActual: Number(producto.STOCK ?? 0),
+            encontrado: true,
+            esCaja: false
+        });
+        renderColaRecepcion();
+        return;
+    }
+
+    // No matcheó como código unitario — probar como código de la
+    // caja/bulto cerrado (venta por caja). Cada escaneo repetido de
+    // este mismo código suma UNA CAJA (varias unidades de una vez),
+    // no una unidad sola.
+    const productoPorCaja = productos.find(p =>
+        String(p.CODIGO_CAJA || "").trim() === codigo && Number(p.UNIDADES_POR_CAJA) > 0
+    );
+
+    if(productoPorCaja){
+        const unidadesPorCaja = Number(productoPorCaja.UNIDADES_POR_CAJA);
+        const existenteCaja = colaRecepcion.find(i => i.codigo === productoPorCaja.CODIGO && i.esCaja);
+        if(existenteCaja){
+            existenteCaja.cantidad += unidadesPorCaja;
+        }else{
+            colaRecepcion.unshift({
+                codigo: productoPorCaja.CODIGO, // se usa el código REAL del producto, no el de la caja — el stock es uno solo
+                PRODUCTO: productoPorCaja.PRODUCTO,
+                cantidad: unidadesPorCaja,
+                stockActual: Number(productoPorCaja.STOCK ?? 0),
+                encontrado: true,
+                esCaja: true,
+                unidadesPorCaja
+            });
+        }
+        renderColaRecepcion();
+        return;
+    }
+
+    // No matcheó ni como unitario ni como caja
+    colaRecepcion.unshift({
+        codigo,
+        PRODUCTO: null,
+        cantidad: 1,
+        stockActual: null,
+        encontrado: false,
+        esCaja: false
+    });
+    renderColaRecepcion();
+    mostrarToast(`No se encontró ningún producto con el código "${codigo}" — buscalo a mano en la lista de abajo`, "error");
+}
+
+function renderColaRecepcion(){
+    const cont = document.getElementById("colaRecepcion");
+    const btn = document.getElementById("btnConfirmarRecepcion");
+
+    if(colaRecepcion.length === 0){
+        cont.innerHTML = `<div class="recepcion-footer sin-items">Todavía no escaneaste ningún producto.</div>`;
+        btn.disabled = true;
+        btn.textContent = "Escaneá un producto para empezar";
+        return;
+    }
+
+    cont.innerHTML = colaRecepcion.map((item, idx) => {
+        if(!item.encontrado){
+            return `
+            <div class="cola-item no-encontrado">
+                <div class="cola-info">
+                    <p class="cola-nombre">⚠️ Código no encontrado</p>
+                    <div class="cola-detalle">${escapeHtml(item.codigo)} — buscalo manualmente abajo</div>
+                    <input type="text" placeholder="Buscar producto para asignarle este código..." style="width:100%; margin-top:6px; padding:6px 8px; border-radius:8px; border:1px solid var(--line); font-size:12.5px;"
+                        oninput="_buscarProductoParaCola(${idx}, this.value, this)">
+                </div>
+                <button type="button" onclick="quitarDeColaRecepcion(${idx})">🗑️</button>
+            </div>`;
+        }
+
+        const stockNuevo = item.stockActual + item.cantidad;
+        const etiquetaCaja = item.esCaja ? `<span style="color:var(--ink-600);"> · 📦 ${Math.round(item.cantidad / item.unidadesPorCaja)} caja${item.cantidad !== item.unidadesPorCaja ? "s" : ""} (${item.unidadesPorCaja} c/u)</span>` : "";
+        return `
+        <div class="cola-item">
+            <div class="cola-info">
+                <p class="cola-nombre">${escapeHtml(item.PRODUCTO)}${etiquetaCaja}</p>
+                <div class="cola-detalle">${escapeHtml(item.codigo)} · stock ${item.stockActual} → <b>${stockNuevo}</b>${item.esCaja ? " (en unidades)" : ""}</div>
+            </div>
+            <input type="number" min="1" step="1" class="cola-cantidad" value="${item.cantidad}"
+                onchange="_cambiarCantidadCola(${idx}, this.value)">
+            <button type="button" onclick="quitarDeColaRecepcion(${idx})">🗑️</button>
+        </div>`;
+    }).join("");
+
+    const totalItems = colaRecepcion.filter(i => i.encontrado).length;
+    const totalPendientes = colaRecepcion.length - totalItems;
+    btn.disabled = totalItems === 0;
+    btn.textContent = totalPendientes > 0
+        ? `Confirmar ${totalItems} producto${totalItems === 1 ? "" : "s"} (${totalPendientes} sin asignar)`
+        : `✓ Confirmar recepción de ${totalItems} producto${totalItems === 1 ? "" : "s"}`;
+}
+
+function _cambiarCantidadCola(idx, valor){
+    const n = Number(valor);
+    colaRecepcion[idx].cantidad = (isNaN(n) || n < 1) ? 1 : n;
+    renderColaRecepcion();
+}
+
+function quitarDeColaRecepcion(idx){
+    colaRecepcion.splice(idx, 1);
+    renderColaRecepcion();
+}
+
+function _buscarProductoParaCola(idx, texto, inputEl){
+    texto = texto.trim();
+    if(texto.length < 2) return;
+
+    const termino = normalizar(texto);
+    const encontrado = productos.find(p => normalizar(p.PRODUCTO).includes(termino) || normalizar(p.CODIGO).includes(termino));
+
+    if(encontrado){
+        colaRecepcion[idx].PRODUCTO = encontrado.PRODUCTO;
+        colaRecepcion[idx].codigo = encontrado.CODIGO; // usa el código real del sistema, no el escaneado
+        colaRecepcion[idx].stockActual = Number(encontrado.STOCK ?? 0);
+        colaRecepcion[idx].encontrado = true;
+        renderColaRecepcion();
+        mostrarToast(`Asignado a "${encontrado.PRODUCTO}"`, "success");
+    }
+}
+
+async function confirmarRecepcion(){
+    const items = colaRecepcion.filter(i => i.encontrado && i.cantidad > 0);
+    if(items.length === 0) return;
+
+    const btn = document.getElementById("btnConfirmarRecepcion");
+    btn.disabled = true;
+    btn.textContent = "Guardando...";
+
+    let exitos = 0;
+    let fallos = [];
+
+    // Uno por uno (no en paralelo): cada llamada ya usa un bloqueo del
+    // lado del servidor para que dos sumas al mismo producto nunca se
+    // pisen, pero mandarlas todas juntas de golpe solo haría que se
+    // esperen en fila igual — más simple y más fácil de seguir el
+    // progreso mandándolas de a una.
+    for(const item of items){
+        try{
+            const params = new URLSearchParams({
+                action: "sumarStockProducto",
+                codigo: item.codigo,
+                cantidad: item.cantidad
+            });
+            const response = await fetchConTimeout(API_URL + "?" + params.toString(), 15000);
+            const data = await response.json();
+
+            if(data.success){
+                exitos++;
+                const p = productos.find(pr => String(pr.CODIGO).trim() === String(item.codigo).trim());
+                if(p) p.STOCK = data.stockNuevo;
+            }else{
+                fallos.push(item.PRODUCTO || item.codigo);
+            }
+        }catch(error){
+            console.error("Error recibiendo producto:", error);
+            fallos.push(item.PRODUCTO || item.codigo);
+        }
+    }
+
+    if(exitos > 0){
+        mostrarToast(`✅ Stock actualizado en ${exitos} producto${exitos === 1 ? "" : "s"}`, "success");
+    }
+    if(fallos.length > 0){
+        mostrarToast(`⚠️ No se pudo actualizar: ${fallos.join(", ")} — quedan en la lista para reintentar`, "error");
+    }
+
+    // Solo se sacan de la cola los que sí se guardaron — los que
+    // fallaron quedan para reintentar sin tener que volver a escanear.
+    colaRecepcion = colaRecepcion.filter(i => !i.encontrado || fallos.includes(i.PRODUCTO));
+    renderColaRecepcion();
+    filtrarYRenderizar();
+
+    if(colaRecepcion.length === 0) cerrarRecepcion();
+}
+
+verificarSesion();
+
+</script>
+</body>
+</html>

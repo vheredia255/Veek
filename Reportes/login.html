@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Acceso · Reportes</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0b1633">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<script src="config.js"></script>
+
+<style>
+
+:root{
+  --navy-950: #070d1f;
+  --navy-900: #0b1633;
+  --navy-800: #122047;
+  --navy-700: #1a2c5c;
+  --navy-600: #24397a;
+
+  --slate-50:  #f7f8fa;
+  --slate-200: #e2e6ed;
+  --slate-400: #99a3b3;
+  --slate-500: #6b7585;
+  --slate-600: #4c5567;
+
+  --red-500:  #dc2626;
+  --red-50:   #fdecec;
+  --blue-500: #2563eb;
+
+  --font-ui: 'Inter', system-ui, -apple-system, Segoe UI, sans-serif;
+}
+
+*{ box-sizing:border-box; }
+
+html,body{
+  margin:0; padding:0;
+  min-height:100vh;
+  font-family:var(--font-ui);
+  -webkit-font-smoothing:antialiased;
+}
+
+body{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:24px;
+  background:linear-gradient(160deg, var(--navy-950) 0%, var(--navy-800) 100%);
+  background-image:
+    repeating-linear-gradient(135deg, rgba(255,255,255,.035) 0px, rgba(255,255,255,.035) 1px, transparent 1px, transparent 13px),
+    linear-gradient(160deg, var(--navy-950) 0%, var(--navy-800) 100%);
+}
+
+.login-brand{
+  display:flex; align-items:center; justify-content:center;
+  gap:12px; margin-bottom:26px;
+}
+.login-brand .mark{
+  width:42px; height:42px; border-radius:11px;
+  background:linear-gradient(135deg, var(--blue-500), var(--navy-600));
+  display:flex; align-items:center; justify-content:center;
+  font-weight:800; font-size:18px; color:#fff;
+  box-shadow:0 4px 14px rgba(37,99,235,.4);
+  flex-shrink:0;
+}
+.login-brand .label{ color:#fff; text-align:left; line-height:1.15; }
+.login-brand .label strong{ display:block; font-size:17px; font-weight:700; letter-spacing:.02em; }
+.login-brand .label small{ display:block; font-size:11px; font-weight:600; letter-spacing:.12em; color:rgba(255,255,255,.5); margin-top:2px; }
+
+.login-wrap{ width:100%; max-width:380px; }
+
+.login-card{
+  position:relative;
+  background:#fff;
+  border-radius:18px;
+  padding:32px 28px 28px;
+  box-shadow:0 24px 60px rgba(0,0,0,.3);
+}
+.login-card::before, .login-card::after{
+  content:""; position:absolute; top:-9px;
+  width:18px; height:18px; border-radius:50%;
+  background:var(--navy-900);
+}
+.login-card::before{ left:24px; }
+.login-card::after{ right:24px; }
+
+.login-title{ font-size:19px; font-weight:700; color:var(--navy-900); margin:0 0 4px; }
+.login-sub{ font-size:13.5px; color:var(--slate-500); margin:0 0 24px; }
+
+.login-field{ margin-bottom:16px; }
+.login-field label{ display:block; font-size:12.5px; font-weight:600; color:var(--slate-600); margin-bottom:6px; }
+
+.login-input-wrap{ position:relative; }
+.login-input-wrap .ic{ position:absolute; left:13px; top:50%; transform:translateY(-50%); font-size:15px; opacity:.55; pointer-events:none; }
+
+.login-field input{
+  width:100%;
+  border:1.5px solid var(--slate-200);
+  border-radius:10px;
+  padding:11px 14px 11px 38px;
+  font-size:14.5px;
+  font-family:var(--font-ui);
+  color:var(--navy-900);
+  transition:border-color .15s, box-shadow .15s;
+}
+.login-field input:focus{
+  outline:none;
+  border-color:var(--blue-500);
+  box-shadow:0 0 0 3px rgba(37,99,235,.12);
+}
+
+.login-toggle-pass{
+  position:absolute; right:6px; top:50%; transform:translateY(-50%);
+  background:none; border:none; cursor:pointer;
+  font-size:13px; color:var(--slate-400);
+  padding:6px 8px; border-radius:6px;
+}
+.login-toggle-pass:hover{ color:var(--slate-600); background:var(--slate-50); }
+
+.login-error{
+  display:none; align-items:center; gap:8px;
+  background:var(--red-50); color:var(--red-500);
+  font-size:13px; font-weight:600;
+  border-radius:10px; padding:10px 12px; margin-bottom:16px;
+}
+.login-error.show{ display:flex; }
+
+.login-btn{
+  width:100%;
+  background:var(--navy-900);
+  color:#fff;
+  border:none; border-radius:10px;
+  padding:13px;
+  font-size:15px; font-weight:700;
+  font-family:var(--font-ui);
+  cursor:pointer;
+  transition:background .15s;
+  display:flex; align-items:center; justify-content:center; gap:8px;
+}
+.login-btn:hover{ background:var(--navy-800); }
+.login-btn:disabled{ background:var(--slate-200); cursor:not-allowed; }
+
+.login-spinner{
+  width:15px; height:15px;
+  border:2px solid rgba(255,255,255,.4);
+  border-top-color:#fff;
+  border-radius:50%;
+  animation:login-spin .6s linear infinite;
+  display:none;
+}
+.login-btn.loading .login-spinner{ display:inline-block; }
+.login-btn.loading .login-btn-text{ display:none; }
+
+@keyframes login-spin{ to{ transform:rotate(360deg); } }
+
+.login-footnote{ text-align:center; font-size:12px; color:rgba(255,255,255,.45); margin-top:22px; }
+
+@media (prefers-reduced-motion:reduce){ .login-spinner{ animation:none; } }
+
+</style>
+</head>
+<body>
+
+<div class="login-wrap">
+
+  <div class="login-brand">
+    <div class="mark">📊</div>
+    <div class="label">
+      <strong id="loginNombreCorto"></strong>
+      <small>REPORTES</small>
+    </div>
+  </div>
+
+  <div class="login-card">
+    <h1 class="login-title">Acceso a reportes</h1>
+    <p class="login-sub">Ingresá tus credenciales del panel para entrar.</p>
+
+    <div class="login-error" id="loginError">
+      <span>⚠️</span>
+      <span id="loginErrorTexto">Usuario o contraseña incorrectos.</span>
+    </div>
+
+    <form id="loginForm" autocomplete="on">
+
+      <div class="login-field">
+        <label for="usuario">Usuario</label>
+        <div class="login-input-wrap">
+          <span class="ic">👤</span>
+          <input type="text" id="usuario" name="usuario" placeholder="Tu usuario" autocomplete="username" autofocus required>
+        </div>
+      </div>
+
+      <div class="login-field">
+        <label for="password">Contraseña</label>
+        <div class="login-input-wrap">
+          <span class="ic">🔒</span>
+          <input type="password" id="password" name="password" placeholder="Tu contraseña" autocomplete="current-password" required>
+          <button type="button" class="login-toggle-pass" id="btnTogglePass" onclick="togglePassword()" aria-label="Mostrar contraseña">Ver</button>
+        </div>
+      </div>
+
+      <button type="submit" class="login-btn" id="btnLogin">
+        <span class="login-spinner"></span>
+        <span class="login-btn-text">Ingresar</span>
+      </button>
+
+    </form>
+  </div>
+
+  <p class="login-footnote">Acceso restringido — uso exclusivo del personal autorizado.</p>
+
+</div>
+
+<script>
+
+let API_URL = "";
+
+(async function inicializar(){
+  await cargarConfigNegocio();
+  API_URL = CONFIG_NEGOCIO.API_URL;
+
+  document.getElementById("loginNombreCorto").textContent = CONFIG_NEGOCIO.NOMBRE_CORTO;
+  document.title = "Acceso · " + CONFIG_NEGOCIO.NOMBRE_CORTO;
+
+  if(!API_URL){
+    mostrarErrorLogin("Esta instalación todavía no tiene configurada la API URL del backend (falta config.json).");
+    const btn = document.getElementById("btnLogin");
+    if(btn) btn.disabled = true;
+  }
+})();
+
+function togglePassword(){
+  const input = document.getElementById("password");
+  const btn = document.getElementById("btnTogglePass");
+  const mostrando = input.type === "text";
+  input.type = mostrando ? "password" : "text";
+  btn.textContent = mostrando ? "Ver" : "Ocultar";
+}
+
+function mostrarErrorLogin(mensaje){
+  const errorBox = document.getElementById("loginError");
+  document.getElementById("loginErrorTexto").textContent = mensaje;
+  errorBox.classList.add("show");
+}
+
+function ocultarErrorLogin(){
+  document.getElementById("loginError").classList.remove("show");
+}
+
+document.getElementById("loginForm").addEventListener("submit", async function(e){
+  e.preventDefault();
+
+  ocultarErrorLogin();
+
+  const usuario = document.getElementById("usuario").value.trim();
+  const password = document.getElementById("password").value;
+
+  if(!usuario || !password){
+    mostrarErrorLogin("Completá usuario y contraseña.");
+    return;
+  }
+
+  if(!API_URL){
+    mostrarErrorLogin("Esta instalación todavía no tiene configurada la API URL del backend (falta config.json).");
+    return;
+  }
+
+  const btn = document.getElementById("btnLogin");
+  btn.disabled = true;
+  btn.classList.add("loading");
+
+  try{
+
+    const r = await fetch(
+      `${API_URL}?action=login&usuario=${encodeURIComponent(usuario)}&password=${encodeURIComponent(password)}`
+    );
+
+    const data = await r.json();
+
+    if(data.success){
+      sessionStorage.setItem("admin", "true");
+      window.location.href = "index.html";
+    }else{
+      mostrarErrorLogin("Usuario o contraseña incorrectos.");
+      btn.disabled = false;
+      btn.classList.remove("loading");
+    }
+
+  }catch(error){
+    console.error("Error de conexión al iniciar sesión:", error);
+    mostrarErrorLogin("No se pudo conectar. Revisá tu conexión e intentá de nuevo.");
+    btn.disabled = false;
+    btn.classList.remove("loading");
+  }
+
+});
+
+if("serviceWorker" in navigator){
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("service-worker.js").catch(() => {});
+  });
+}
+
+</script>
+
+</body>
+</html>

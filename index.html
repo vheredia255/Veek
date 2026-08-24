@@ -1,0 +1,938 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+
+    <!-- ===== SEO BÁSICO =====
+         Los textos de acá abajo son solo un placeholder de respaldo por si
+         falla la carga de la configuración (ver aplicarApariencia() en
+         app.js), que los reemplaza con los datos reales de la hoja
+         CONFIGURACION apenas carga la página. Nunca debe quedar un nombre
+         de cliente puntual hardcodeado acá. -->
+    <title>Catálogo Mayorista | Envíos a todo el país</title>
+    <meta name="description" content="Catálogo mayorista online. Comprá con envíos a todo el país. Precios mayoristas, grandes cantidades y variedad de productos.">
+    <meta name="keywords" content="mayorista, compra mayorista, artículos mayoristas, envíos todo el país">
+    <meta name="robots" content="index, follow">
+    <meta name="author" content="">
+    <link rel="canonical" href="">
+
+    <!-- ===== OPEN GRAPH (WhatsApp, Facebook, LinkedIn) ===== -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="">
+    <meta property="og:title" content="Catálogo Mayorista">
+    <meta property="og:description" content="Catálogo mayorista online con envíos a todo el país. Consultá precios y hacé tu pedido directamente por WhatsApp.">
+    <meta property="og:image" content="icon-512.png">
+    <meta property="og:image:width" content="512">
+    <meta property="og:image:height" content="512">
+    <meta property="og:locale" content="es_AR">
+    <meta property="og:site_name" content="">
+
+    <!-- ===== TWITTER / X CARD ===== -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Catálogo Mayorista">
+    <meta name="twitter:description" content="Catálogo mayorista online con envíos a todo el país.">
+    <meta name="twitter:image" content="icon-512.png">
+
+    <!-- ===== SCHEMA.ORG — datos estructurados para Google =====
+         id="schema-negocio" para que app.js pueda reemplazar el "name"
+         con el nombre real del negocio apenas carga la config. -->
+    <script type="application/ld+json" id="schema-negocio">
+    {
+      "@context": "https://schema.org",
+      "@type": "Store",
+      "name": "",
+      "description": "Catálogo mayorista con envíos a todo el país.",
+      "url": "",
+      "logo": "icon-512.png",
+      "image": "icon-512.png",
+      "priceRange": "$$",
+      "currenciesAccepted": "ARS",
+      "paymentAccepted": "Transferencia, Efectivo, Tarjeta",
+      "areaServed": {
+        "@type": "Country",
+        "name": "Argentina"
+      },
+      "hasOfferCatalog": {
+        "@type": "OfferCatalog",
+        "name": "Catálogo mayorista de juguetes",
+        "description": "Juguetes y artículos varios al por mayor"
+      }
+    }
+    </script>
+
+    <!-- Favicon y PWA -->
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon.ico">
+    <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
+    <link rel="apple-touch-icon" sizes="192x192" href="icon-192.png">
+    <link rel="apple-touch-icon" sizes="512x512" href="icon-512.png">
+    <meta name="theme-color" content="#241536">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@600;700&display=swap" rel="stylesheet">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+
+    <!-- Datos del negocio (nombre, WhatsApp, SEO, etc.) — editar en config.js -->
+    <script src="config.js"></script>
+</head>
+
+<body>
+  <!-- ===== POPUP PROMOCIONAL ===== -->
+  <div id="popupPromo" style="
+    display:none; position:fixed; inset:0; z-index:8000;
+    background:rgba(0,0,0,.75);
+    align-items:center; justify-content:center;
+    animation:fadeInPopup .3s ease;
+  " onclick="if(event.target===this) cerrarPopupPromo()">
+    <div style="position:relative; max-width:min(560px,92vw); max-height:90vh;">
+      <button onclick="cerrarPopupPromo()" style="
+        position:absolute; top:-14px; right:-14px; z-index:1;
+        width:34px; height:34px; border-radius:50%;
+        background:#fff; border:none; font-size:18px;
+        cursor:pointer; box-shadow:0 2px 8px rgba(0,0,0,.3);
+        display:flex; align-items:center; justify-content:center;
+      ">✕</button>
+      <img id="popupPromoImg" src="" alt="Promoción" loading="lazy"
+        style="width:100%; border-radius:12px; display:block;
+        max-height:90vh; object-fit:contain; box-shadow:0 8px 32px rgba(0,0,0,.4);">
+      <video id="popupPromoVideo" src="" style="display:none; width:100%; border-radius:12px;
+        max-height:90vh; object-fit:contain; box-shadow:0 8px 32px rgba(0,0,0,.4);"
+        autoplay playsinline muted loop></video>
+    </div>
+  </div>
+  <style>
+  @keyframes fadeInPopup{ from{opacity:0;transform:scale(.95)} to{opacity:1;transform:scale(1)} }
+  </style>
+
+  <!-- ===== LOADING CAT — Whisky ===== -->
+  <div id="loadingCat" style="
+    position:fixed; inset:0; z-index:9999;
+    background:#1a2040;
+    display:flex; flex-direction:column;
+    align-items:center; justify-content:center;
+    transition:opacity .5s ease;
+  ">
+    <div class="cat-loader">
+      <div class="cat-body"></div>
+      <div class="cat-tail"></div>
+      <div class="cat-face">
+        <div class="cat-ear cat-ear-l"></div>
+        <div class="cat-ear cat-ear-r"></div>
+        <div class="cat-eye cat-eye-l"></div>
+        <div class="cat-eye cat-eye-r"></div>
+        <div class="cat-nose"></div>
+        <div class="cat-whiskers"></div>
+      </div>
+      <div class="loading-text">Cargando...</div>
+    </div>
+  </div>
+
+  <style>
+  /*
+   * 🐱 Loading Cat — inspirado en Whisky, la gata cálico que
+   * desde 2015 apoya y sigue apoyando a su familia en todo momento.
+   * Los colores naranja, negro y blanco son los suyos,
+   * y la inspiración para este gato también viene de ella.
+   *
+   * Colores exactos de Whisky:
+   * — Blanco en el pecho, cara y patitas
+   * — Naranja dorado en los costados y mejillas
+   * — Gris oscuro/carbón en la espalda y cola
+   * — Ojos verdes, nariz rosada, bigotes largos blancos
+   *
+   * ── Dedicado con amor ──────────────────────────────────────
+   *
+   * A mis compañeros de vida felinos y caninos:
+   * Whisky, Ginebra, Susy, Tonic, Tigresa, Margarita, Milanesa,
+   * Queso, Copito, Hamburgueso, Mojito, Damita, Negro, Negrito, Oreo,
+   * Tequila, Tabaco y Ron (los hermanos de Whisky),
+   * Martini, Bella, Lucero, Wayna, Sombra, Gritoncio,
+   * Batman, Moto moto, Pantaleona,
+   * y todos los perritos y gatitos sin nombre que fueron
+   * mis amigos en estos años — gracias por el amor incondicional.
+   *
+   * A mis hijos Emanuel, Victor, Midori, Aaron, Kenshi,
+   * Naileth y Lynn — son mi razón y mi motor.
+   *
+   * A mi novia Keily, mi hermana Victoria,
+   * mi padre Edgar y mi mamá Magda —
+   * gracias por estar siempre.
+   *
+   * ────────────────────────────────────────────────────────────
+   */
+  .cat-loader{ position:relative; width:160px; height:160px; }
+
+  /* Arco del cuerpo — blanco (pecho), naranja (costado), gris oscuro (espalda) */
+  .cat-body{
+    position:absolute; inset:0;
+    border:20px solid transparent;
+    border-top-color:#3a3a3a;      /* espalda gris oscura */
+    border-right-color:#e8a84a;    /* costado naranja dorado */
+    border-bottom-color:#f5f5f5;   /* pecho blanco */
+    border-left-color:#e8a84a;     /* costado naranja */
+    border-radius:50%;
+    animation:cat-spin 1.4s linear infinite;
+    filter:drop-shadow(0 0 6px rgba(232,168,74,.25));
+  }
+
+  /* Cola — gris oscuro como la de Whisky, con base naranja */
+  .cat-tail{
+    position:absolute; bottom:0px; left:50%;
+    width:15px; height:42px;
+    background:linear-gradient(to bottom, #e8a84a 20%, #3a3a3a 100%);
+    border-radius:0 0 12px 12px;
+    transform-origin:top center;
+    animation:cat-spin 1.4s linear infinite, cat-tail 1.4s ease-in-out infinite;
+    margin-left:-7px;
+  }
+
+  /* Cara — blanca con mejilla naranja izquierda y mancha gris derecha */
+  .cat-face{
+    position:absolute; top:50%; left:50%;
+    transform:translate(-50%,-50%);
+    width:58px; height:52px;
+    background:#f5f5f5;            /* blanco base, como su cara */
+    border-radius:50% 50% 44% 44%;
+    z-index:2;
+    overflow:hidden;
+    box-shadow:0 2px 8px rgba(0,0,0,.15);
+  }
+
+  /* Mejilla naranja izquierda */
+  .cat-face::before{
+    content:"";
+    position:absolute; top:0; left:-2px;
+    width:26px; height:34px;
+    background:#e8a84a;
+    border-radius:0 70% 60% 0;
+    opacity:.85;
+  }
+
+  /* Mancha gris oscura arriba derecha — como su espalda */
+  .cat-face::after{
+    content:"";
+    position:absolute; top:-2px; right:2px;
+    width:20px; height:20px;
+    background:#4a4a4a;
+    border-radius:0 0 60% 60%;
+    opacity:.9;
+  }
+
+  /* Orejas */
+  .cat-ear{
+    position:absolute; top:-15px; width:0; height:0;
+    border-left:11px solid transparent;
+    border-right:11px solid transparent;
+  }
+  /* Oreja izquierda — naranja como su cabeza */
+  .cat-ear-l{
+    left:5px; transform:rotate(-8deg);
+    border-bottom:20px solid #e8a84a;
+  }
+  /* Oreja derecha — gris oscuro como su espalda */
+  .cat-ear-r{
+    right:5px; transform:rotate(8deg);
+    border-bottom:20px solid #4a4a4a;
+  }
+  /* Pelito interior de las orejas */
+  .cat-ear-l::after, .cat-ear-r::after{
+    content:"";
+    position:absolute; top:4px; left:-5px;
+    width:0; height:0;
+    border-left:5px solid transparent;
+    border-right:5px solid transparent;
+    border-bottom:10px solid rgba(255,255,255,.4);
+  }
+
+  /* Ojos — verdes como los de Whisky */
+  .cat-eye{
+    position:absolute; top:17px;
+    width:10px; height:10px;
+    background:#4a9e5c;
+    border-radius:50%;
+    z-index:4;
+    animation:cat-blink 3s ease-in-out infinite;
+    box-shadow:0 0 3px rgba(74,158,92,.5);
+  }
+  /* Pupila negra */
+  .cat-eye::after{
+    content:"";
+    position:absolute; top:2px; left:3px;
+    width:4px; height:6px;
+    background:#111;
+    border-radius:50%;
+  }
+  .cat-eye-l{ left:9px; }
+  .cat-eye-r{ right:9px; }
+
+  /* Nariz — rosada como la de Whisky */
+  .cat-nose{
+    position:absolute; bottom:12px; left:50%;
+    transform:translateX(-50%);
+    width:8px; height:5px;
+    background:#f4a7b9;
+    border-radius:50% 50% 40% 40%;
+    z-index:4;
+  }
+
+  /* Bigotes largos y blancos — como los de Whisky */
+  .cat-whiskers{
+    position:absolute; bottom:15px; left:50%;
+    transform:translateX(-50%);
+    width:54px; height:10px;
+    z-index:4;
+  }
+  .cat-whiskers::before{
+    content:"";
+    position:absolute; top:2px; left:0;
+    width:22px; height:1.5px;
+    background:rgba(255,255,255,.9);
+    border-radius:2px;
+    transform:rotate(-6deg);
+    box-shadow:0 4px 0 rgba(255,255,255,.7);
+  }
+  .cat-whiskers::after{
+    content:"";
+    position:absolute; top:2px; right:0;
+    width:22px; height:1.5px;
+    background:rgba(255,255,255,.9);
+    border-radius:2px;
+    transform:rotate(6deg);
+    box-shadow:0 4px 0 rgba(255,255,255,.7);
+  }
+
+  .loading-text{
+    position:absolute; bottom:-42px; left:50%;
+    transform:translateX(-50%);
+    color:#fff; font-size:14px; font-weight:600;
+    white-space:nowrap; font-family:sans-serif;
+    letter-spacing:.07em;
+    text-shadow:0 1px 4px rgba(0,0,0,.4);
+  }
+
+  @keyframes cat-spin{ to{ transform:rotate(360deg); } }
+  @keyframes cat-tail{
+    0%,100%{ transform:rotate(-22deg); }
+    50%{ transform:rotate(22deg); }
+  }
+  @keyframes cat-blink{
+    0%,88%,100%{ transform:scaleY(1); }
+    94%{ transform:scaleY(.08); }
+  }
+  </style>
+
+
+
+
+    <!-- FRANJA SUPERIOR: mensajes rotativos, configurables desde Configuración -->
+    <div id="top-banner" class="top-banner d-none">
+        <div class="top-banner-track" id="top-banner-track"></div>
+    </div>
+
+    <!-- NAVBAR -->
+
+    <nav class="navbar navbar-dark fixed-top">
+
+        <div class="container">
+
+            <div class="navbar-top">
+
+                <span class="navbar-brand fw-bold">
+                    <span id="navbar-brand-icono">🏬</span> <span id="navbar-brand-texto">MAYORISTA</span>
+                </span>
+
+                <button
+                    class="btn btn-cart-top"
+                    onclick="abrirCarrito()">
+
+                    🛍️ Carrito <span id="cart-count" class="cart-count-badge">0</span>
+
+                </button>
+
+            </div>
+
+            <div class="navbar-search-row">
+
+                <div class="search-wrap">
+                    <span class="search-icon">🔍</span>
+                    <input
+                        id="search"
+                        class="form-control"
+                        placeholder="Buscar producto..."
+                        autocomplete="off"
+                        oninput="buscarProductos()">
+                    <button
+                        id="search-clear"
+                        class="search-clear"
+                        type="button"
+                        aria-label="Limpiar búsqueda"
+                        onclick="limpiarBusqueda()">
+                        ✕
+                    </button>
+                </div>
+
+                <button
+                    id="btn-consultar-pedido-nav"
+                    class="btn btn-pdf-top"
+                    type="button"
+                    onclick="abrirConsultaPedido()"
+                    title="Consultá el estado de tu pedido">
+                    📦 <span class="btn-texto-navbar">Mi pedido</span>
+                </button>
+
+                <button
+                    id="btn-descargar-pdf"
+                    class="btn btn-pdf-top"
+                    type="button"
+                    onclick="descargarCatalogoPDF()"
+                    title="Descargar en PDF los productos que se están mostrando">
+                    📄
+                    <span class="btn-texto-navbar btn-texto-navbar-full">Descargar Catálogo PDF</span>
+                    <span class="btn-texto-navbar-corto">PDF</span>
+                </button>
+
+            </div>
+
+        </div>
+
+    </nav>
+
+    <!-- INDICADOR DE PEDIDO MÍNIMO -->
+    <div id="minimo-progress" class="minimo-progress d-none">
+        <div class="container minimo-progress-inner">
+            <span id="minimo-progress-texto" class="minimo-progress-texto"></span>
+            <div class="minimo-progress-track">
+                <div id="minimo-progress-fill" class="minimo-progress-fill"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- HERO -->
+
+    <section class="hero" id="hero">
+        <div class="container text-center">
+
+            <h1 class="display-5 fw-bold" id="hero-titulo">
+                Catálogo Mayorista
+            </h1>
+
+            <p class="lead" id="hero-subtitulo">
+                Catálogo Mayorista Online
+            </p>
+
+        </div>
+    </section>
+
+    <section class="beneficios">
+
+        <div class="container">
+
+            <div class="row text-center gy-2" id="beneficios-row">
+
+                <div class="col-md-2 col-6" id="beneficio-instagram-wrap">
+                    <a href="#" id="beneficio-instagram" class="beneficio-item beneficio-link" target="_blank" rel="noopener">
+                        <i class="bi bi-instagram"></i> <span id="beneficio-instagram-texto">Instagram</span>
+                    </a>
+                </div>
+
+                <div class="col-md-2 col-6" id="beneficio-texto1-wrap">
+                    <span class="beneficio-item" id="beneficio-texto1-contenido"></span>
+                </div>
+
+                <div class="col-md-2 col-6" id="beneficio-texto2-wrap">
+                    <span class="beneficio-item" id="beneficio-texto2-contenido"></span>
+                </div>
+
+                <div class="col-md-2 col-6" id="beneficio-telefono1-wrap">
+                    <a href="#" id="beneficio-telefono1" class="beneficio-item beneficio-link" target="_blank" rel="noopener">
+                        <i class="bi bi-whatsapp"></i> <span id="beneficio-telefono1-texto"></span>
+                    </a>
+                </div>
+
+                <div class="col-md-2 col-6" id="beneficio-telefono2-wrap">
+                    <a href="#" id="beneficio-telefono2" class="beneficio-item beneficio-link" target="_blank" rel="noopener">
+                        <i class="bi bi-whatsapp"></i> <span id="beneficio-telefono2-texto"></span>
+                    </a>
+                </div>
+
+                <div class="col-md-2 col-6" id="beneficio-direccion-wrap">
+                    <a href="#" id="beneficio-direccion" class="beneficio-item beneficio-link" data-bs-toggle="modal" data-bs-target="#modalUbicacion">
+                        <i class="bi bi-geo-alt-fill"></i> <span id="beneficio-direccion-texto"></span>
+                    </a>
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+    <!-- MODAL UBICACIÓN — mapa + dirección + teléfonos del local
+         (se completa dinámicamente desde el panel admin,
+         ver aplicarBeneficios() en app.js) -->
+    <div class="modal fade" id="modalUbicacion" tabindex="-1">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0 shadow">
+
+          <div class="modal-header border-0 pb-0">
+            <h5 class="modal-title fw-bold">
+              <i class="bi bi-geo-alt-fill"></i> Nuestra ubicación
+            </h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+          </div>
+
+          <div class="modal-body">
+
+            <div id="modalUbicacion-mapa-wrap" class="mapa-direccion-wrap d-none">
+                <iframe
+                    id="modalUbicacion-mapa-iframe"
+                    class="mapa-direccion-iframe"
+                    src=""
+                    loading="lazy"
+                    referrerpolicy="no-referrer-when-downgrade"
+                    title="Ubicación del local">
+                </iframe>
+            </div>
+
+            <p id="modalUbicacion-direccion" class="modalUbicacion-dato d-none">
+                <i class="bi bi-geo-alt-fill"></i> <span></span>
+            </p>
+
+            <a id="modalUbicacion-telefono1" href="#" target="_blank" rel="noopener" class="modalUbicacion-dato modalUbicacion-link d-none">
+                <i class="bi bi-whatsapp"></i> <span></span>
+            </a>
+
+            <a id="modalUbicacion-telefono2" href="#" target="_blank" rel="noopener" class="modalUbicacion-dato modalUbicacion-link d-none">
+                <i class="bi bi-whatsapp"></i> <span></span>
+            </a>
+
+            <a id="modalUbicacion-comofllegar" href="#" target="_blank" rel="noopener" class="btn btn-primary w-100 mt-2 d-none">
+                <i class="bi bi-signpost-2-fill"></i> Cómo llegar
+            </a>
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL CONSULTA PEDIDO -->
+    <div class="modal fade" id="modalConsultaPedido" tabindex="-1">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0 shadow">
+          <div class="modal-header border-0 pb-0">
+            <h5 class="modal-title fw-bold">📦 Consultar mi pedido</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body pt-2">
+
+            <!-- Formulario -->
+            <div id="consultaForm">
+              <div class="mb-3">
+                <label class="form-label fw-semibold" style="font-size:13.5px;">Número de pedido</label>
+                <div class="input-group">
+                  <span class="input-group-text fw-bold" style="background:#e9ecef;letter-spacing:.04em;">PED-</span>
+                  <input type="text" class="form-control" id="consultaPedidoId" placeholder="Ej: 1782779081593-t0g59m" inputmode="text">
+                </div>
+              </div>
+              <div class="mb-3">
+                <label class="form-label fw-semibold" style="font-size:13.5px;">Tu DNI o CUIT</label>
+                <input type="text" class="form-control" id="consultaDni" placeholder="Sin puntos ni espacios" inputmode="numeric">
+              </div>
+              <div id="consultaError" class="alert alert-danger py-2 d-none" style="font-size:13px;"></div>
+              <button class="btn btn-primary w-100 fw-bold" id="btnConsultar" onclick="ejecutarConsultaPedido()">
+                Consultar
+              </button>
+            </div>
+
+            <!-- Resultado -->
+            <div id="consultaResultado" style="display:none;">
+              <div id="consultaResultadoBody"></div>
+              <button class="btn btn-outline-secondary w-100 mt-3" onclick="resetConsultaPedido()">
+                Consultar otro pedido
+              </button>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CATEGORÍAS -->
+
+    <section class="container categorias-section">
+        <div id="categoria-chips" class="chip-scroll" role="tablist" aria-label="Filtrar por categoría"></div>
+
+        <div class="orden-filtro-wrap">
+            <label for="orden-select" class="orden-filtro-label">Ordenar</label>
+            <select id="orden-select" class="orden-select" onchange="ordenarProductos()">
+                <option value="relevancia">Relevancia</option>
+                <option value="precio-asc">Precio: menor a mayor</option>
+                <option value="precio-desc">Precio: mayor a menor</option>
+                <option value="nombre-asc">Nombre: A-Z</option>
+                <option value="nombre-desc">Nombre: Z-A</option>
+            </select>
+        </div>
+
+        <div class="precio-filtro-wrap">
+
+            <span class="precio-filtro-label">💰 Precio</span>
+
+            <div class="precio-filtro-inputs">
+                <input
+                    type="number"
+                    id="precio-min"
+                    class="precio-input"
+                    placeholder="Mín."
+                    min="0"
+                    inputmode="numeric"
+                    oninput="filtrarPorPrecio()">
+
+                <span class="precio-filtro-sep">—</span>
+
+                <input
+                    type="number"
+                    id="precio-max"
+                    class="precio-input"
+                    placeholder="Máx."
+                    min="0"
+                    inputmode="numeric"
+                    oninput="filtrarPorPrecio()">
+            </div>
+
+            <button
+                id="precio-clear"
+                class="precio-filtro-clear"
+                type="button"
+                aria-label="Quitar filtro de precio"
+                onclick="limpiarFiltroPrecio()">
+                ✕
+            </button>
+
+        </div>
+    </section>
+
+    <!-- PRODUCTOS -->
+
+    <section class="container">
+
+        <div id="resultados-info" class="resultados-info"></div>
+
+        <div id="productos" class="row"></div>
+
+        <div id="sin-resultados" class="sin-resultados d-none">
+            <div class="sin-resultados-icon">🔍</div>
+            <h5>No encontramos productos</h5>
+            <p>Probá con otra palabra o elegí otra categoría.</p>
+            <button class="btn btn-outline-primary" onclick="limpiarFiltros()">Quitar filtros</button>
+        </div>
+
+    </section>
+
+    <!-- MODAL CARRITO -->
+
+    <div class="modal fade" id="cartModal" tabindex="-1">
+
+        <div class="modal-dialog modal-dialog-scrollable modal-cart-desktop">
+
+            <div class="modal-content">
+
+                <div class="modal-header">
+
+                    <h5 class="modal-title">
+                        🛍️ Tu carrito
+                    </h5>
+
+                    <button
+                        class="btn-close"
+                        data-bs-dismiss="modal"
+                        aria-label="Cerrar">
+                    </button>
+
+                </div>
+
+                <div class="modal-body modal-body-cart-cols">
+
+                    <!-- Columna izquierda: productos -->
+                    <div class="cart-col-productos">
+
+                        <div id="cart-items"></div>
+
+                        <div id="cart-empty" class="cart-empty d-none">
+                            <div class="cart-empty-icon">🛒</div>
+                            <p>Tu carrito está vacío.</p>
+                        </div>
+
+                    </div>
+
+                    <!-- Columna derecha: datos del cliente -->
+                    <div class="cart-col-datos">
+
+                        <p class="form-section-label">Datos para el pedido</p>
+
+                        <input
+                            type="text"
+                            id="clienteNombre"
+                            class="form-control mb-2"
+                            placeholder="Nombre y Apellido *">
+
+                        <input
+                            type="text"
+                            id="clienteEmpresa"
+                            class="form-control mb-1"
+                            placeholder="Transporte (opcional)"
+                            oninput="validarCampoTransporte()">
+                        <div id="clienteEmpresaError" class="text-danger small mb-2" style="display:none;"></div>
+
+                        <input
+                            type="text"
+                            id="clienteDireccion"
+                            class="form-control mb-2"
+                            placeholder="Dirección *">
+
+                        <div class="row g-2 mb-2">
+                            <div class="col-6">
+                                <input
+                                    type="text"
+                                    id="clienteLocalidad"
+                                    class="form-control"
+                                    placeholder="Localidad *">
+                            </div>
+                            <div class="col-6">
+                                <input
+                                    type="text"
+                                    id="clienteProvincia"
+                                    class="form-control"
+                                    placeholder="Provincia *">
+                            </div>
+                        </div>
+
+                        <input
+                            type="text"
+                            id="clienteCodigoPostal"
+                            class="form-control mb-2"
+                            placeholder="Código Postal (opcional)">
+
+                        <input
+                            type="tel"
+                            id="clienteTelefono"
+                            class="form-control mb-2"
+                            placeholder="Teléfono *">
+
+                        <input
+                            type="text"
+                            id="clienteDni"
+                            class="form-control mb-2"
+                            placeholder="DNI o CUIT *">
+
+                        <hr>
+
+                        <div class="cart-total-row">
+                            <span>Total</span>
+                            <h5 class="mb-0">$<span id="cart-total">0</span></h5>
+                        </div>
+
+                        <div id="cart-minimo-aviso" class="cart-minimo-aviso d-none">
+                            ⚠️ El pedido mínimo es $100.000
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">
+
+                    <button
+                        class="btn btn-danger"
+                        onclick="vaciarCarrito()">
+                        Vaciar carrito
+                    </button>
+
+                    <button
+                        id="btn-checkout"
+                        class="btn btn-success"
+                        onclick="checkoutWhatsapp()">
+                        <span class="btn-checkout-spinner"></span>
+                        <span id="btn-checkout-texto">Enviar pedido por WhatsApp</span>
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- MODAL VISTA RÁPIDA -->
+
+    <div class="modal fade" id="quickViewModal" tabindex="-1">
+
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <button class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="qv-layout">
+
+                        <div class="qv-col-imagen">
+                            <div id="qv-imagen-zoom-wrap" class="qv-imagen-zoom-wrap">
+                                <img id="qv-imagen" src="" alt="" class="qv-img" loading="lazy">
+                            </div>
+                        </div>
+
+                        <div class="qv-col-info">
+                            <small id="qv-categoria" class="text-muted d-block"></small>
+                            <h5 class="qv-titulo" id="qv-titulo"></h5>
+
+                            <div class="price qv-precio-grande" id="qv-precio"></div>
+
+                            <div id="qv-stock" class="stock-badge d-none mb-2"></div>
+
+                            <p class="qv-descripcion" id="qv-descripcion"></p>
+
+                            <div class="qty-stepper mt-2">
+                                <button class="qty-btn" onclick="cambiarQtyInput('qv-cantidad',-1)" aria-label="Restar">−</button>
+                                <input type="number" id="qv-cantidad" class="qty-input" value="1" min="1">
+                                <button class="qty-btn" onclick="cambiarQtyInput('qv-cantidad',1)" aria-label="Sumar">+</button>
+                            </div>
+
+                            <button class="btn btn-primary w-100 mt-3" id="qv-agregar">
+                                🛒 Agregar al carrito
+                            </button>
+                        </div>
+
+                    </div>
+
+                    <!-- PRODUCTOS RELACIONADOS (misma categoría) -->
+                    <div id="qv-relacionados-wrap" class="qv-relacionados-wrap d-none">
+                        <p class="qv-relacionados-titulo">También te puede interesar</p>
+                        <div id="qv-relacionados" class="qv-relacionados-scroll"></div>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- TOASTS -->
+    <div id="toast-container" class="toast-container" aria-live="polite" aria-atomic="true"></div>
+
+    <!-- BARRA INFERIOR CARRITO (MOBILE) -->
+    <button id="mobile-cart-bar" class="mobile-cart-bar d-none" onclick="abrirCarrito()">
+        <span class="mcb-left">
+            🛍️ <span id="mcb-count">0</span> producto(s)
+        </span>
+        <span class="mcb-right">
+            Ver carrito · $<span id="mcb-total">0</span>
+        </span>
+    </button>
+
+    <!-- VOLVER ARRIBA -->
+    <button id="scroll-top-btn" class="scroll-top-btn d-none" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="Volver arriba">
+        ↑
+    </button>
+
+    <!-- SCRIPTS -->
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script src="js/app.js"></script>
+
+    <a
+        id="whatsapp-float-btn"
+        href="#"
+        target="_blank"
+        rel="noopener"
+        class="whatsapp-float-text"
+        aria-label="Ayuda por WhatsApp">
+
+        <img
+            id="whatsapp-float-icono"
+            src=""
+            alt=""
+            width="28"
+            height="28"
+            loading="lazy">
+
+        <span>¿Necesitás ayuda?</span>
+
+    </a>
+
+    <!-- ===== FOOTER SEO =====
+         Texto estático visible para Google aunque no ejecute el JS.
+         Los productos se cargan dinámicamente, así que este contenido
+         ayuda al crawler a entender de qué trata el sitio. ===== -->
+    <footer style="background:#0b1633; color:rgba(255,255,255,.6); padding:32px 24px; margin-top:40px; font-size:13px; line-height:1.7;">
+      <div style="max-width:900px; margin:0 auto;">
+        <div style="display:flex; flex-wrap:wrap; gap:32px; margin-bottom:20px;">
+          <div style="flex:1; min-width:200px;">
+            <h3 id="footer-titulo-1" style="color:#fff; font-size:15px; font-weight:700; margin:0 0 10px;"></h3>
+            <p id="footer-texto-1" style="margin:0;"></p>
+          </div>
+          <div style="flex:1; min-width:200px;">
+            <h3 style="color:#fff; font-size:15px; font-weight:700; margin:0 0 10px;">Categorías</h3>
+            <p id="footer-texto-2" style="margin:0;"></p>
+          </div>
+          <div style="flex:1; min-width:200px;">
+            <h3 style="color:#fff; font-size:15px; font-weight:700; margin:0 0 10px;">Envíos y pedidos</h3>
+            <p id="footer-texto-3" style="margin:0;"></p>
+          </div>
+        </div>
+        <p id="footer-copyright" style="margin:0; border-top:1px solid rgba(255,255,255,.1); padding-top:16px; text-align:center;"></p>
+      </div>
+    </footer>
+
+    <script>
+    // Aplica los textos del negocio (nombre, WhatsApp, footer, SEO) leídos
+    // desde Sheets vía config.js. app.js puede volver a pisar estos mismos
+    // elementos poco después con su propia carga — no hay conflicto, es
+    // la misma fuente de datos, esto solo evita que se vea vacío al inicio.
+    (async function aplicarDatosNegocio(){
+      await cargarConfigNegocio();
+      aplicarConfigSEO();
+
+      const c = CONFIG_NEGOCIO;
+
+      const brandTexto = document.getElementById("navbar-brand-texto");
+      if(brandTexto) brandTexto.textContent = c.NOMBRE_NEGOCIO;
+
+      const heroTitulo = document.getElementById("hero-titulo");
+      if(heroTitulo) heroTitulo.textContent = c.HERO_TITULO;
+
+      const heroSubtitulo = document.getElementById("hero-subtitulo");
+      if(heroSubtitulo) heroSubtitulo.textContent = c.HERO_SUBTITULO;
+
+      const whatsappBtn = document.getElementById("whatsapp-float-btn");
+      if(whatsappBtn) whatsappBtn.href = "https://wa.me/" + c.WHATSAPP_NUMERO;
+      const whatsappIcono = document.getElementById("whatsapp-float-icono");
+      if(whatsappIcono) whatsappIcono.src = c.WHATSAPP_ICONO_URL;
+
+      const f1t = document.getElementById("footer-titulo-1");
+      if(f1t) f1t.textContent = c.FOOTER_TITULO_1;
+      const f1 = document.getElementById("footer-texto-1");
+      if(f1) f1.textContent = c.FOOTER_TEXTO_1;
+      const f2 = document.getElementById("footer-texto-2");
+      if(f2) f2.textContent = c.FOOTER_TEXTO_2;
+      const f3 = document.getElementById("footer-texto-3");
+      if(f3) f3.textContent = c.FOOTER_TEXTO_3;
+      const fc = document.getElementById("footer-copyright");
+      if(fc) fc.textContent = c.FOOTER_COPYRIGHT;
+    })();
+    </script>
+
+</body>
+
+</html>
