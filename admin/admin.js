@@ -3146,23 +3146,16 @@ function filtrarProductos() {
   const selectCategoria = document.getElementById("filtroCategoriaProductos");
   const selectEstado = document.getElementById("filtroEstadoProducto");
 
-  // Normalizar: minúsculas + sin acentos para búsqueda más precisa
-  const normalizar = t => String(t || "").toLowerCase()
-    .normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
-
-  const termino = normalizar(inputBuscar ? inputBuscar.value : "");
+  const termino = inputBuscar ? inputBuscar.value.trim() : "";
   const categoria = selectCategoria ? selectCategoria.value : "";
   const estado = selectEstado ? selectEstado.value : "";
 
   let filtrados = productosAdminGlobal;
 
   if (termino) {
-    filtrados = filtrados.filter(p => {
-      const codigo = normalizar(p.CODIGO);
-      const nombre = normalizar(p.PRODUCTO);
-      const cat    = normalizar(p.CATEGORIA);
-      return codigo.includes(termino) || nombre.includes(termino) || cat.includes(termino);
-    });
+    // Misma búsqueda tolerante a errores de tipeo que usa el POS —
+    // también considera el ALIAS del producto, no solo código/nombre/categoría.
+    filtrados = filtrados.filter(p => productoCoincideBusquedaPOS(p, termino));
   }
 
   if (categoria) {
@@ -3206,6 +3199,7 @@ function nuevoProducto() {
   document.getElementById("pmCodigo").disabled = false;
   document.getElementById("pmNombre").value = "";
   document.getElementById("pmCategoria").value = "";
+  document.getElementById("pmAlias").value = "";
   document.getElementById("pmPrecio").value = "";
   document.getElementById("pmStock").value = "";
   document.getElementById("pmImagen").value = "";
@@ -3238,6 +3232,7 @@ function editarProducto(codigo) {
   document.getElementById("pmCodigo").value = p.CODIGO;
   document.getElementById("pmNombre").value = p.PRODUCTO || "";
   document.getElementById("pmCategoria").value = p.CATEGORIA || "";
+  document.getElementById("pmAlias").value = p.ALIAS || "";
   document.getElementById("pmPrecio").value = Number(p.PRECIO || 0);
   document.getElementById("pmStock").value = Number(p.STOCK || 0);
   document.getElementById("pmImagen").value = p.IMAGEN || "";
@@ -4062,6 +4057,7 @@ async function guardarProductoForm() {
   const codigo   = document.getElementById("pmCodigo").value.trim();
   const nombre   = document.getElementById("pmNombre").value.trim();
   const categoria = document.getElementById("pmCategoria").value.trim();
+  const alias     = document.getElementById("pmAlias").value.trim();
   const precio   = document.getElementById("pmPrecio").value;
   const stock    = document.getElementById("pmStock").value;
   const imagen   = document.getElementById("pmImagen").value.trim();
@@ -4094,6 +4090,7 @@ async function guardarProductoForm() {
       CODIGO: codigo,
       PRODUCTO: nombre,
       CATEGORIA: categoria,
+      ALIAS: alias,
       PRECIO: precio || 0,
       STOCK: stock || 0,
       IMAGEN: imagen,
@@ -5174,6 +5171,82 @@ function filtrarCategoriaPOS(cat, el) {
   renderPosGrid();
 }
 
+/* ---- búsqueda tolerante a errores (código, nombre, categoría y alias) ---- */
+
+/** minúsculas + sin acentos, para comparar sin importar mayúsculas/tildes */
+function normalizarBusquedaPOS(t) {
+  return String(t || "").toLowerCase()
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+}
+
+/**
+ * Distancia de Levenshtein entre dos strings, con corte anticipado:
+ * si en algún punto ya se superó maxDist, devuelve maxDist + 1 sin
+ * terminar el cálculo completo (más rápido cuando se llama muchas
+ * veces por tecla tipeada en el buscador del POS).
+ */
+function distanciaLevenshteinPOS(a, b, maxDist) {
+  if (a === b) return 0;
+  if (Math.abs(a.length - b.length) > maxDist) return maxDist + 1;
+
+  const n = b.length;
+  let prev = new Array(n + 1);
+  for (let j = 0; j <= n; j++) prev[j] = j;
+
+  for (let i = 1; i <= a.length; i++) {
+    const curr = new Array(n + 1);
+    curr[0] = i;
+    let filaMin = curr[0];
+    for (let j = 1; j <= n; j++) {
+      const costo = a[i - 1] === b[j - 1] ? 0 : 1;
+      curr[j] = Math.min(prev[j] + 1, curr[j - 1] + 1, prev[j - 1] + costo);
+      if (curr[j] < filaMin) filaMin = curr[j];
+    }
+    if (filaMin > maxDist) return maxDist + 1;
+    prev = curr;
+  }
+  return prev[n];
+}
+
+/** True si "palabraTexto" contiene "palabraBusqueda", o si difiere de ella en pocas letras (typo tolerado según el largo de lo tipeado) */
+function palabraCoincideTolerantePOS(palabraBusqueda, palabraTexto) {
+  if (!palabraBusqueda) return true;
+  if (palabraTexto.includes(palabraBusqueda)) return true;
+  if (palabraBusqueda.length < 3) return false; // muy corta -> el fuzzy da falsos positivos
+  const maxDist = palabraBusqueda.length <= 5 ? 1 : 2;
+  return distanciaLevenshteinPOS(palabraBusqueda, palabraTexto, maxDist) <= maxDist;
+}
+
+/**
+ * Compara lo tipeado en el buscador contra CODIGO, PRODUCTO,
+ * CATEGORIA y ALIAS del producto (el alias no se muestra en ningún
+ * lado, solo suma más "palabras" por las que ese producto puede
+ * encontrarse). Primero intenta un match literal (rápido y exacto);
+ * si no matchea, prueba palabra por palabra con tolerancia a errores
+ * de tipeo, para que buscar "cocacol" o "coaca" igual encuentre
+ * "Coca Cola".
+ */
+function productoCoincideBusquedaPOS(producto, filtroTexto) {
+  const texto = normalizarBusquedaPOS(filtroTexto);
+  if (!texto) return true;
+
+  const textoCompleto = normalizarBusquedaPOS(
+    [producto.CODIGO, producto.PRODUCTO, producto.CATEGORIA, producto.ALIAS].join(" ")
+  );
+
+  // Camino rápido: la frase completa tipeada aparece tal cual
+  if (textoCompleto.includes(texto)) return true;
+
+  const palabrasTexto = textoCompleto.split(/\s+/).filter(Boolean);
+  const palabrasBusqueda = texto.split(/\s+/).filter(Boolean);
+
+  // Cada palabra tipeada tiene que encontrar alguna palabra del
+  // producto que la contenga o que sea "casi igual" (typo tolerado)
+  return palabrasBusqueda.every(pb =>
+    palabrasTexto.some(pt => palabraCoincideTolerantePOS(pb, pt))
+  );
+}
+
 /* ---- product grid ---- */
 
 function renderPosGrid(filtroTexto) {
@@ -5185,14 +5258,7 @@ function renderPosGrid(filtroTexto) {
     lista = lista.filter(p => String(p.CATEGORIA || "").trim() === categoriaActivaPOS);
   }
   if (filtroTexto) {
-    const normalizar = t => String(t || "").toLowerCase()
-      .normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-    const texto = normalizar(filtroTexto);
-    lista = lista.filter(p =>
-      normalizar(p.CODIGO).includes(texto) ||
-      normalizar(p.PRODUCTO).includes(texto) ||
-      normalizar(p.CATEGORIA).includes(texto)
-    );
+    lista = lista.filter(p => productoCoincideBusquedaPOS(p, filtroTexto));
   }
 
   if (lista.length === 0) {
@@ -5358,6 +5424,7 @@ function abrirEdicionRapidaPOS(codigo) {
   document.getElementById("erpCodigo").value = producto.CODIGO;
   document.getElementById("erpPrecio").value = producto.PRECIO ?? 0;
   document.getElementById("erpStock").value = producto.STOCK ?? 0;
+  document.getElementById("erpAlias").value = producto.ALIAS || "";
   document.getElementById("modalEdicionRapidaPOSBackdrop").classList.add("show");
 }
 
@@ -5376,6 +5443,7 @@ async function guardarEdicionRapidaPOS() {
   const codigoNuevo = document.getElementById("erpCodigo").value.trim();
   const precio = document.getElementById("erpPrecio").value;
   const stock  = document.getElementById("erpStock").value;
+  const alias  = document.getElementById("erpAlias").value.trim();
 
   if (!codigoNuevo) { toast("El código no puede quedar vacío", "error"); return; }
   if (precio === "" || Number(precio) < 0) { toast("Ingresá un precio válido", "error"); return; }
@@ -5405,6 +5473,7 @@ async function guardarEdicionRapidaPOS() {
       CODIGO: codigoNuevo,
       PRODUCTO: producto.PRODUCTO,
       CATEGORIA: producto.CATEGORIA || "",
+      ALIAS: alias,
       PRECIO: precio,
       STOCK: stock,
       IMAGEN: producto.IMAGEN || "",
@@ -5429,6 +5498,7 @@ async function guardarEdicionRapidaPOS() {
     producto.CODIGO = codigoNuevo;
     producto.PRECIO = Number(precio);
     producto.STOCK = Number(stock);
+    producto.ALIAS = alias;
     // Si el producto editado ya estaba en el ticket actual, el código
     // ahí también tiene que actualizarse — si no, quedaría apuntando
     // a un código que ya no existe más en productosPOS.

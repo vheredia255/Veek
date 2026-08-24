@@ -2542,6 +2542,11 @@
         <input type="number" class="form-control" id="erpStock" step="1">
         <div class="form-text" style="font-size:11px;">Puede ser negativo — se usa para saber cuánto se vendió sin stock cargado.</div>
       </div>
+      <div class="mb-2">
+        <label class="form-label" style="font-size:12.5px;">Alias / palabras clave</label>
+        <input type="text" class="form-control" id="erpAlias" placeholder="Ej: coca, cocacola, gaseosa negra">
+        <div class="form-text" style="font-size:11px;">Separados por coma. Se usan solo para encontrar el producto más rápido al buscar en el POS — no cambian el nombre real.</div>
+      </div>
     </div>
     <div class="product-modal-actions">
       <button class="btn btn-outline-secondary" onclick="cerrarEdicionRapidaPOS()">Cancelar</button>
@@ -2672,6 +2677,12 @@
       <div class="mt-2">
         <label class="form-label">Nombre del producto *</label>
         <input type="text" class="form-control" id="pmNombre" placeholder="Ej: Coca Cola 500ml" required>
+      </div>
+
+      <div class="mt-2">
+        <label class="form-label">Alias / palabras clave <span class="text-muted" style="font-size:11px;">(opcional, para buscar más rápido en el POS)</span></label>
+        <input type="text" class="form-control" id="pmAlias" placeholder="Ej: coca, cocacola, gaseosa negra">
+        <div class="form-text" style="font-size:11px;">Separados por coma. No se muestran al cliente ni reemplazan el nombre — solo ayudan a encontrar el producto al escribir en el buscador del POS.</div>
       </div>
 
       <div class="mt-2">
